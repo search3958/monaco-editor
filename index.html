@@ -1,0 +1,2179 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>BaramCode</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body,
+		html {
+			height: 100%;
+			overflow: hidden;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe WPC', 'Segoe UI Mono', 'Cascadia Code', Consolas, 'Liberation Mono', Menlo, Monaco, 'Courier New', monospace;
+		}
+
+		/* 共通ボタンスタイル */
+		.btn,
+		.toolbar-btn,
+		.welcome-btn,
+		.search-btn,
+		.git-btn {
+			padding: 8px 16px;
+			background: #363636;
+			color: #cccccc;
+			border: 1px solid #5a5a5a;
+			border-radius: 8px;
+			cursor: pointer;
+			font-size: 13px;
+			font-family: inherit;
+			transition: all 0.15s ease;
+		}
+
+		.btn:hover,
+		.toolbar-btn:hover,
+		.welcome-btn:hover,
+		.search-btn:hover,
+		.git-btn:hover {
+			background: #404040;
+			border-color: #6a6a6a;
+		}
+
+		.btn:active,
+		.toolbar-btn:active,
+		.welcome-btn:active,
+		.search-btn:active,
+		.git-btn:active {
+			transform: scale(0.98);
+		}
+
+		.btn.primary,
+		.search-btn,
+		.git-btn,
+		.welcome-btn {
+			background: #0e639c;
+			border-color: #0e639c;
+			color: #ffffff;
+		}
+
+		.btn.primary:hover,
+		.search-btn:hover,
+		.git-btn:hover,
+		.welcome-btn:hover {
+			background: #1177bb;
+			border-color: #1177bb;
+		}
+
+		.btn.secondary,
+		.search-btn.secondary {
+			background: #3c3c3c;
+			border-color: #5a5a5a;
+		}
+
+		.btn.secondary:hover,
+		.search-btn.secondary:hover {
+			background: #505050;
+		}
+
+		.btn.danger {
+			background: #c1392b;
+			border-color: #c1392b;
+			color: #ffffff;
+		}
+
+		.btn.danger:hover {
+			background: #e74c3c;
+			border-color: #e74c3c;
+		}
+
+		/* 共通入力スタイル */
+		.input,
+		.search-input,
+		.git-input {
+			width: 100%;
+			padding: 8px 12px;
+			background: #3c3c3c;
+			border: 1px solid #5a5a5a;
+			color: #cccccc;
+			font-size: 13px;
+			border-radius: 6px;
+			font-family: inherit;
+			transition: border-color 0.15s ease;
+		}
+
+		.input:focus,
+		.search-input:focus,
+		.git-input:focus {
+			outline: none;
+			border-color: #007acc;
+		}
+
+		/* メインレイアウト */
+		#app {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			background: #1e1e1e;
+		}
+
+		/* トップバー */
+		#topbar {
+			height: 35px;
+			background: #323233;
+			color: #cccccc;
+			display: flex;
+			align-items: center;
+			padding: 0 15px;
+			gap: 10px;
+			border-bottom: 1px solid #252526;
+			flex-shrink: 0;
+			position: relative;
+			z-index: 1000;
+		}
+
+		#topbar .title {
+			font-size: 13px;
+			font-weight: 400;
+		}
+
+		.menu-item {
+			padding: 0 8px;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			cursor: pointer;
+			font-size: 13px;
+			transition: background 0.1s;
+			position: relative;
+		}
+
+		.menu-item:hover {
+			background: rgba(255, 255, 255, 0.1);
+		}
+
+		/* ドロップダウンメニュー */
+		.dropdown-menu {
+			display: none;
+			position: absolute;
+			top: 127%;
+			left: 0;
+			background: #1b1b1b73;
+			border: 1px solid #ffffff14;
+			border-radius: 24px;
+			min-width: 220px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+			padding: 4px 4px;
+			z-index: 2000;
+			corner-shape: superellipse(1.6);
+			backdrop-filter: blur(8px);
+		}
+
+		.dropdown-menu.show {
+			display: block;
+		}
+
+		.menu-item-option {
+			padding: 8px;
+			color: #cccccc;
+			cursor: pointer;
+			font-size: 13px;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			transition: background 0.1s;
+			corner-shape: superellipse(1.6);
+			border-radius: 18px;
+		}
+
+		.menu-item-option:hover {
+			background: rgba(255, 255, 255, 0.1);
+			backdrop-filter: brightness(2);
+		}
+
+		.menu-item-option .icon {
+			width: 16px;
+			text-align: center;
+		}
+
+		.menu-separator {
+			height: 1px;
+			background: #454545;
+			margin: 4px 0;
+		}
+
+		.spacer {
+			flex: 1;
+		}
+
+		/* メインコンテンツ */
+		#main-content {
+			display: flex;
+			flex: 1;
+			overflow: hidden;
+		}
+
+		/* ナビゲーションレール（左端） */
+		#nav-rail {
+			width: 48px;
+			background: #333333;
+			display: flex;
+			flex-direction: column;
+			border-right: 1px solid #252526;
+			flex-shrink: 0;
+		}
+
+		.nav-item {
+			width: 48px;
+			height: 48px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			color: #858585;
+			font-size: 24px;
+			position: relative;
+			transition: color 0.1s;
+		}
+
+		.nav-item:hover {
+			color: #cccccc;
+		}
+
+		.nav-item.active {
+			color: #ffffff;
+		}
+
+		.nav-item.active::before {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 8px;
+			bottom: 8px;
+			width: 2px;
+			background: #007acc;
+		}
+
+		/* サイドバー */
+		#sidebar {
+			width: 280px;
+			background: #252526;
+			border-right: 1px solid #1e1e1e;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			transition: width 0.2s, margin-left 0.2s;
+		}
+
+		#sidebar.collapsed {
+			width: 0;
+			margin-left: -280px;
+		}
+
+		.sidebar-header {
+			padding: 12px 20px;
+			background: #252526;
+			color: #cccccc;
+			font-size: 11px;
+			text-transform: uppercase;
+			font-weight: 600;
+			letter-spacing: 0.5px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-bottom: 1px solid #1e1e1e;
+		}
+
+		.sidebar-content {
+			flex: 1;
+			overflow-y: auto;
+			overflow-x: hidden;
+		}
+
+		.sidebar-content::-webkit-scrollbar {
+			width: 10px;
+		}
+
+		.sidebar-content::-webkit-scrollbar-track {
+			background: #252526;
+		}
+
+		.sidebar-content::-webkit-scrollbar-thumb {
+			background: #424242;
+			border-radius: 5px;
+		}
+
+		.sidebar-content::-webkit-scrollbar-thumb:hover {
+			background: #4e4e4e;
+		}
+
+		/* ファイルツリー */
+		.tree-item {
+			display: flex;
+			align-items: center;
+			padding: 4px 8px;
+			cursor: pointer;
+			color: #cccccc;
+			font-size: 13px;
+			user-select: none;
+			white-space: nowrap;
+		}
+
+		.tree-item:hover {
+			background: #2a2d2e;
+		}
+
+		.tree-item.selected {
+			background: #37373d;
+			color: #ffffff;
+		}
+
+		.tree-item.active-file {
+			background: #094771;
+			color: #ffffff;
+		}
+
+		.tree-indent {
+			display: inline-block;
+		}
+
+		.tree-arrow {
+			width: 16px;
+			height: 16px;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			margin-right: 2px;
+			font-size: 10px;
+			color: #858585;
+			transition: transform 0.1s;
+		}
+
+		.tree-arrow.expanded {
+			transform: rotate(90deg);
+		}
+
+		.tree-arrow.empty {
+			visibility: hidden;
+		}
+
+		.tree-icon {
+			width: 16px;
+			height: 16px;
+			margin-right: 6px;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.tree-label {
+			flex: 1;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.tree-item.modified .tree-label::after {
+			content: ' ●';
+			color: #007acc;
+			margin-left: 4px;
+		}
+
+		/* エディタエリア */
+		#editor-area {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			background: #1e1e1e;
+		}
+
+		/* タブバー */
+		#tab-bar {
+			display: flex;
+			background: #252526;
+			border-bottom: 1px solid #1e1e1e;
+			overflow-x: auto;
+			overflow-y: hidden;
+			height: 35px;
+			align-items: stretch;
+		}
+
+		#tab-bar::-webkit-scrollbar {
+			height: 0;
+		}
+
+		.tab {
+			padding: 0 12px;
+			background: #2d2d2d;
+			color: rgba(255, 255, 255, 0.5);
+			cursor: pointer;
+			border-right: 1px solid #252526;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			font-size: 13px;
+			white-space: nowrap;
+			min-width: 100px;
+			max-width: 200px;
+			position: relative;
+		}
+
+		.tab:hover {
+			color: rgba(255, 255, 255, 0.8);
+		}
+
+		.tab.active {
+			background: #1e1e1e;
+			color: #ffffff;
+			border-top: 1px solid #007acc;
+		}
+
+		.tab-icon {
+			font-size: 16px;
+		}
+
+		.tab-label {
+			flex: 1;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.tab-close {
+			width: 20px;
+			height: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			opacity: 0;
+			border-radius: 3px;
+			font-size: 16px;
+		}
+
+		.tab:hover .tab-close {
+			opacity: 0.6;
+		}
+
+		.tab-close:hover {
+			background: rgba(255, 255, 255, 0.15);
+			opacity: 1 !important;
+		}
+
+		.tab.modified .tab-close::before {
+			content: '●';
+			font-size: 18px;
+			color: #007acc;
+		}
+
+		.tab.modified:hover .tab-close::before {
+			content: '×';
+			color: inherit;
+		}
+
+		/* エディタコンテナ */
+		#editor-container {
+			flex: 1;
+			position: relative;
+			background: #1e1e1e;
+		}
+
+		.editor-wrapper {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			display: none;
+		}
+
+		.editor-wrapper.active {
+			display: block;
+		}
+
+		/* バイナリファイル警告 */
+		.binary-warning {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			color: #cccccc;
+			text-align: center;
+			padding: 40px;
+		}
+
+		.binary-warning-icon {
+			font-size: 64px;
+			margin-bottom: 20px;
+		}
+
+		.binary-warning-title {
+			font-size: 18px;
+			font-weight: 500;
+			margin-bottom: 10px;
+		}
+
+		.binary-warning-message {
+			font-size: 14px;
+			color: #858585;
+			margin-bottom: 20px;
+		}
+
+		/* 検索パネル */
+		#search-panel {
+			display: none;
+			flex-direction: column;
+		}
+
+		#search-panel.active {
+			display: flex;
+		}
+
+		.search-container {
+			padding: 15px 20px;
+		}
+
+		.search-input-group {
+			margin-bottom: 12px;
+		}
+
+		.search-input-wrapper {
+			position: relative;
+			margin-bottom: 8px;
+		}
+
+		.search-input-icon {
+			position: absolute;
+			right: 8px;
+			top: 50%;
+			transform: translateY(-50%);
+			color: #858585;
+			font-size: 14px;
+		}
+
+		.search-options {
+			display: flex;
+			gap: 4px;
+			margin-top: 8px;
+		}
+
+		.search-option {
+			width: 28px;
+			height: 28px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #3c3c3c;
+			border: 1px solid #5a5a5a;
+			border-radius: 6px;
+			cursor: pointer;
+			color: #858585;
+			font-size: 14px;
+			font-weight: 600;
+			transition: all 0.15s ease;
+		}
+
+		.search-option:hover {
+			background: #505050;
+		}
+
+		.search-option.active {
+			background: #094771;
+			border-color: #007acc;
+			color: #ffffff;
+		}
+
+		.search-actions {
+			display: flex;
+			gap: 8px;
+			margin-top: 12px;
+		}
+
+		.search-results {
+			flex: 1;
+			overflow-y: auto;
+			padding: 0 20px 20px;
+		}
+
+		.search-result-item {
+			padding: 8px 12px;
+			margin-bottom: 4px;
+			background: #2d2d2d;
+			border-radius: 6px;
+			cursor: pointer;
+			transition: background 0.15s ease;
+		}
+
+		.search-result-item:hover {
+			background: #37373d;
+		}
+
+		.search-result-file {
+			font-size: 13px;
+			color: #cccccc;
+			margin-bottom: 4px;
+			font-weight: 500;
+		}
+
+		.search-result-line {
+			font-size: 12px;
+			color: #858585;
+			font-family: 'Courier New', monospace;
+		}
+
+		.search-result-match {
+			background: #4a4a0a;
+			color: #ffff00;
+			padding: 0 2px;
+		}
+
+		/* Gitパネル */
+		#git-panel {
+			display: none;
+			flex-direction: column;
+		}
+
+		#git-panel.active {
+			display: flex;
+		}
+
+		.git-container {
+			padding: 15px 20px;
+		}
+
+		.git-section {
+			margin-bottom: 20px;
+		}
+
+		.git-section-title {
+			font-size: 11px;
+			color: #858585;
+			text-transform: uppercase;
+			margin-bottom: 8px;
+			letter-spacing: 0.5px;
+		}
+
+		.git-input {
+			margin-bottom: 8px;
+		}
+
+		.git-btn {
+			width: 100%;
+			margin-bottom: 6px;
+		}
+
+		.git-status {
+			padding: 12px;
+			background: #1e1e1e;
+			border-left: 3px solid #007acc;
+			border-radius: 6px;
+			font-size: 12px;
+			color: #cccccc;
+			margin-top: 10px;
+			display: none;
+		}
+
+		.git-status.show {
+			display: block;
+		}
+
+		.git-status.error {
+			border-left-color: #f44336;
+		}
+
+		.git-status.success {
+			border-left-color: #4caf50;
+		}
+
+		.repo-list {
+			flex: 1;
+			overflow-y: auto;
+			padding: 0 20px 20px;
+		}
+
+		.repo-item {
+			padding: 12px;
+			margin-bottom: 6px;
+			background: #2d2d2d;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: all 0.15s ease;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.repo-item:hover {
+			background: #37373d;
+		}
+
+		.repo-info {
+			flex: 1;
+		}
+
+		.repo-name {
+			font-size: 13px;
+			color: #cccccc;
+			font-weight: 500;
+			margin-bottom: 4px;
+		}
+
+		.repo-url {
+			font-size: 11px;
+			color: #858585;
+		}
+
+		.repo-delete {
+			padding: 6px 10px;
+			background: transparent;
+			border: 1px solid #5a5a5a;
+			border-radius: 6px;
+			color: #858585;
+			cursor: pointer;
+			font-size: 12px;
+			transition: all 0.15s ease;
+		}
+
+		.repo-delete:hover {
+			background: #c1392b;
+			border-color: #c1392b;
+			color: #ffffff;
+		}
+
+		/* ツールバー */
+		.toolbar {
+			padding: 10px 20px;
+			background: #252526;
+			border-bottom: 1px solid #1e1e1e;
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+
+		/* 通知 */
+		.notification {
+			position: fixed;
+			bottom: 20px;
+			right: 20px;
+			background: #4caf50;
+			color: white;
+			padding: 12px 20px;
+			border-radius: 8px;
+			z-index: 3000;
+			animation: slideIn 0.3s;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+			font-size: 13px;
+		}
+
+		@keyframes slideIn {
+			from {
+				transform: translateX(100%);
+				opacity: 0;
+			}
+
+			to {
+				transform: translateX(0);
+				opacity: 1;
+			}
+		}
+
+		/* プログレス */
+		.progress-overlay {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.8);
+			z-index: 2000;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.progress-overlay.show {
+			display: flex;
+		}
+
+		.progress-content {
+			background: #252526;
+			padding: 30px;
+			border-radius: 8px;
+			text-align: center;
+			color: white;
+		}
+
+		.spinner {
+			border: 3px solid #3c3c3c;
+			border-top: 3px solid #007acc;
+			border-radius: 50%;
+			width: 40px;
+			height: 40px;
+			animation: spin 1s linear infinite;
+			margin: 0 auto 15px;
+		}
+
+		@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+
+		/* ウェルカム画面 */
+		.welcome-screen {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			color: #cccccc;
+			text-align: center;
+			padding: 40px;
+		}
+
+		.welcome-logo {
+			font-size: 64px;
+			margin-bottom: 20px;
+		}
+
+		.welcome-title {
+			font-size: 24px;
+			font-weight: 300;
+			margin-bottom: 10px;
+		}
+
+		.welcome-subtitle {
+			font-size: 14px;
+			color: #858585;
+			margin-bottom: 30px;
+		}
+
+		.welcome-actions {
+			display: flex;
+			gap: 15px;
+		}
+
+		.icon img {
+			filter: brightness(2);
+			height: 16px;
+			margin-top: 2px;
+		}
+
+		/* モバイル対応 */
+		@media (max-width: 768px) {
+			#nav-rail {
+				width: 40px;
+			}
+
+			.nav-item {
+				width: 40px;
+				height: 40px;
+				font-size: 20px;
+			}
+
+			#sidebar {
+				position: absolute;
+				left: 40px;
+				top: 35px;
+				bottom: 0;
+				z-index: 100;
+				transform: translateX(-100%);
+				transition: transform 0.3s;
+			}
+
+			#sidebar.mobile-open {
+				transform: translateX(0);
+			}
+		}
+	</style>
+</head>
+
+<body>
+
+	<div id="app">
+		<!-- トップバー -->
+		<div id="topbar">
+			<span class="title">BaramCode</span>
+			<div class="menu-item" id="file-menu">
+				File
+				<div class="dropdown-menu" id="file-dropdown">
+					<div class="menu-item-option" onclick="openFiles()">
+						<span class="icon"><img src="icons/open_file.svg"></span>
+						<span>Open File...</span>
+					</div>
+					<div class="menu-item-option" onclick="openFolder()">
+						<span class="icon"><img src="icons/open_folder.svg"></span>
+						<span>Open Folder...</span>
+					</div>
+					<div class="menu-separator"></div>
+					<div class="menu-item-option" onclick="createNewFile()">
+						<span class="icon"><img src="icons/new_file.svg"></span>
+						<span>New File</span>
+					</div>
+					<div class="menu-item-option" onclick="createNewFolder()">
+						<span class="icon"><img src="icons/new_folder.svg"></span>
+						<span>New Folder</span>
+					</div>
+					<div class="menu-separator"></div>
+					<div class="menu-item-option" onclick="showGitClone()">
+						<span class="icon"><img src="icons/clone_from_github.svg"></span>
+						<span>Clone from GitHub...</span>
+					</div>
+					<div class="menu-separator"></div>
+					<div class="menu-item-option" onclick="saveCurrentFile()">
+						<span class="icon"><img src="icons/save.svg"></span>
+						<span>Save</span>
+					</div>
+					<div class="menu-item-option" onclick="saveAllFiles()">
+						<span class="icon"><img src="icons/save_all.svg"></span>
+						<span>Save All</span>
+					</div>
+				</div>
+			</div>
+			<div class="menu-item" id="edit-menu">
+				Edit
+				<div class="dropdown-menu" id="edit-dropdown">
+					<div class="menu-item-option" onclick="formatCode()">
+						<span class="icon"><img src="icons/format_document.svg"></span>
+						<span>Format Document</span>
+					</div>
+					<div class="menu-separator"></div>
+					<div class="menu-item-option" onclick="switchPanel('search')">
+						<span class="icon"><img src="icons/find.svg"></span>
+						<span>Find...</span>
+					</div>
+					<div class="menu-item-option" onclick="switchPanel('search')">
+						<span class="icon"><img src="icons/replace.svg"></span>
+						<span>Replace...</span>
+					</div>
+				</div>
+			</div>
+			<div class="menu-item" id="view-menu">
+				View
+				<div class="dropdown-menu" id="view-dropdown">
+					<div class="menu-item-option" onclick="switchPanel('files')">
+						<span class="icon"><img src="icons/explorer.svg"></span>
+						<span>Explorer</span>
+					</div>
+					<div class="menu-item-option" onclick="switchPanel('search')">
+						<span class="icon"><img src="icons/search.svg"></span>
+						<span>Search</span>
+					</div>
+					<div class="menu-item-option" onclick="switchPanel('git')">
+						<span class="icon"><img src="icons/source_control.svg"></span>
+						<span>Source Control</span>
+					</div>
+				</div>
+			</div>
+			<div class="spacer"></div>
+			<div class="menu-item" id="current-file-name"></div>
+		</div>
+
+		<!-- メインコンテンツ -->
+		<div id="main-content">
+			<!-- ナビゲーションレール -->
+			<div id="nav-rail">
+				<div class="nav-item active" data-panel="files" title="Files">
+					<img src="icons/explorer.svg">
+				</div>
+				<div class="nav-item" data-panel="search" title="Search">
+					<img src="icons/search.svg">
+				</div>
+				<div class="nav-item" data-panel="git" title="Source Control">
+					<img src="icons/source_control.svg">
+				</div>
+			</div>
+
+			<!-- サイドバー -->
+			<div id="sidebar">
+				<!-- ファイルパネル -->
+				<div id="files-panel">
+					<div class="sidebar-header">
+						<span>EXPLORER</span>
+						<span id="file-count">0</span>
+					</div>
+					<div class="toolbar">
+						<button class="toolbar-btn" onclick="openFiles()" title="Open Files">📄 Open</button>
+						<button class="toolbar-btn" onclick="openFolder()" title="Open Folder">📂 Folder</button>
+					</div>
+					<div class="sidebar-content" id="file-tree"></div>
+				</div>
+
+				<!-- 検索パネル -->
+				<div id="search-panel">
+					<div class="sidebar-header">
+						<span>SEARCH</span>
+					</div>
+					<div class="search-container">
+						<div class="search-input-group">
+							<div class="search-input-wrapper">
+								<input type="text" class="search-input" id="search-text" placeholder="Search">
+								<span class="search-input-icon">🔍</span>
+							</div>
+							<div class="search-input-wrapper">
+								<input type="text" class="search-input" id="replace-text" placeholder="Replace">
+								<span class="search-input-icon">🔄</span>
+							</div>
+							<div class="search-options">
+								<div class="search-option" id="search-case" title="Match Case">Aa</div>
+								<div class="search-option" id="search-word" title="Match Whole Word">ab</div>
+								<div class="search-option" id="search-regex" title="Use Regular Expression">.*</div>
+							</div>
+						</div>
+						<div class="search-actions">
+							<button class="search-btn secondary" onclick="searchInFiles()">Search</button>
+							<button class="search-btn" onclick="replaceInFiles()">Replace</button>
+						</div>
+					</div>
+					<div class="search-results" id="search-results"></div>
+				</div>
+
+				<!-- Gitパネル -->
+				<div id="git-panel">
+					<div class="sidebar-header">
+						<span>SOURCE CONTROL</span>
+					</div>
+					<div class="git-container">
+						<div class="git-section">
+							<div class="git-section-title">Clone Repository</div>
+							<input type="password" class="git-input" id="github-token"
+								placeholder="GitHub Token (optional)">
+							<input type="text" class="git-input" id="github-repo" placeholder="Repository URL">
+							<input type="text" class="git-input" id="github-branch" value="main" placeholder="Branch">
+							<button class="git-btn" onclick="cloneRepository()">Clone</button>
+						</div>
+						<div id="git-status" class="git-status"></div>
+					</div>
+					<div class="sidebar-header">
+						<span>CLONED REPOSITORIES</span>
+					</div>
+					<div class="repo-list" id="repo-list"></div>
+				</div>
+			</div>
+
+			<!-- エディタエリア -->
+			<div id="editor-area">
+				<div id="tab-bar"></div>
+				<div id="editor-container">
+					<div class="welcome-screen" id="welcome-screen">
+						<div class="welcome-logo">📝</div>
+						<div class="welcome-title">BaramCode</div>
+						<div class="welcome-subtitle">開始しましょう。</div>
+						<div class="welcome-actions">
+							<button class="welcome-btn" onclick="openFiles()">Open File</button>
+							<button class="welcome-btn" onclick="openFolder()">Open Folder</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- プログレス表示 -->
+	<div id="progress-overlay" class="progress-overlay">
+		<div class="progress-content">
+			<div class="spinner"></div>
+			<div id="progress-text">Processing...</div>
+		</div>
+	</div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+	<script>
+		// グローバル変数
+		let editors = new Map();
+		let files = new Map();
+		let fileTree = new Map();
+		let expandedFolders = new Set();
+		let activeFileId = null;
+		let fileIdCounter = 0;
+		let githubConfig = { token: '', repo: '', branch: 'main' };
+		let fileHandles = new Map();
+		let currentPanel = 'files';
+		let db = null;
+		let searchResultsData = [];
+
+		// バイナリファイル拡張子リスト
+		const BINARY_EXTENSIONS = [
+			'png', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'webp',
+			'mp3', 'mp4', 'avi', 'mov', 'wav', 'flac',
+			'zip', 'rar', '7z', 'tar', 'gz',
+			'exe', 'dll', 'so', 'dylib',
+			'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+			'bin', 'dat', 'db'
+		];
+
+		// IndexedDB初期化
+		function initDB() {
+			return new Promise((resolve, reject) => {
+				const request = indexedDB.open('BaramCodeDB', 1);
+
+				request.onerror = () => reject(request.error);
+				request.onsuccess = () => {
+					db = request.result;
+					resolve(db);
+				};
+
+				request.onupgradeneeded = (event) => {
+					const db = event.target.result;
+					if (!db.objectStoreNames.contains('repositories')) {
+						db.createObjectStore('repositories', { keyPath: 'id', autoIncrement: true });
+					}
+				};
+			});
+		}
+
+		// リポジトリ保存
+		async function saveRepository(repoData) {
+			return new Promise((resolve, reject) => {
+				const transaction = db.transaction(['repositories'], 'readwrite');
+				const store = transaction.objectStore('repositories');
+				const request = store.add(repoData);
+
+				request.onsuccess = () => resolve(request.result);
+				request.onerror = () => reject(request.error);
+			});
+		}
+
+		// リポジトリ一覧取得
+		async function getRepositories() {
+			return new Promise((resolve, reject) => {
+				const transaction = db.transaction(['repositories'], 'readonly');
+				const store = transaction.objectStore('repositories');
+				const request = store.getAll();
+
+				request.onsuccess = () => resolve(request.result);
+				request.onerror = () => reject(request.error);
+			});
+		}
+
+		// リポジトリ削除
+		async function deleteRepository(id) {
+			return new Promise((resolve, reject) => {
+				const transaction = db.transaction(['repositories'], 'readwrite');
+				const store = transaction.objectStore('repositories');
+				const request = store.delete(id);
+
+				request.onsuccess = () => resolve();
+				request.onerror = () => reject(request.error);
+			});
+		}
+
+		// Monaco Editorの初期化
+		require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+
+		require(['vs/editor/editor.main'], async function () {
+			await initDB();
+			initializeApp();
+		});
+
+		function initializeApp() {
+			setupNavigation();
+			setupKeyboardShortcuts();
+			setupMenus();
+			loadRepositories();
+		}
+
+		// メニュー設定
+		function setupMenus() {
+			const menus = ['file-menu', 'edit-menu', 'view-menu'];
+
+			menus.forEach(menuId => {
+				const menu = document.getElementById(menuId);
+				const dropdown = menu.querySelector('.dropdown-menu');
+
+				menu.addEventListener('click', (e) => {
+					e.stopPropagation();
+
+					// 他のメニューを閉じる
+					document.querySelectorAll('.dropdown-menu').forEach(d => {
+						if (d !== dropdown) d.classList.remove('show');
+					});
+
+					dropdown.classList.toggle('show');
+				});
+			});
+
+			// 外側クリックでメニューを閉じる
+			document.addEventListener('click', () => {
+				document.querySelectorAll('.dropdown-menu').forEach(d => {
+					d.classList.remove('show');
+				});
+			});
+		}
+
+		// ナビゲーション設定
+		function setupNavigation() {
+			document.querySelectorAll('.nav-item').forEach(item => {
+				item.addEventListener('click', () => {
+					const panel = item.dataset.panel;
+					switchPanel(panel);
+				});
+			});
+
+			document.querySelectorAll('.search-option').forEach(option => {
+				option.addEventListener('click', () => {
+					option.classList.toggle('active');
+				});
+			});
+		}
+
+		function switchPanel(panel) {
+			currentPanel = panel;
+
+			document.querySelectorAll('.nav-item').forEach(item => {
+				item.classList.toggle('active', item.dataset.panel === panel);
+			});
+
+			document.getElementById('files-panel').style.display = panel === 'files' ? 'flex' : 'none';
+			document.getElementById('files-panel').style.flexDirection = 'column';
+			document.getElementById('search-panel').classList.toggle('active', panel === 'search');
+			document.getElementById('git-panel').classList.toggle('active', panel === 'git');
+		}
+
+		// ファイルがバイナリかチェック
+		function isBinaryFile(filename) {
+			const ext = filename.split('.').pop().toLowerCase();
+			return BINARY_EXTENSIONS.includes(ext);
+		}
+
+		// バイナリ警告を表示
+		function showBinaryWarning(fileId, filename) {
+			const container = document.getElementById('editor-container');
+			const wrapper = document.createElement('div');
+			wrapper.className = 'editor-wrapper';
+			wrapper.id = `editor-${fileId}`;
+			wrapper.innerHTML = `
+				<div class="binary-warning">
+					<div class="binary-warning-icon">⚠️</div>
+					<div class="binary-warning-title">Binary File Detected</div>
+					<div class="binary-warning-message">
+						The file "${filename}" appears to be binary and cannot be displayed in the text editor.
+					</div>
+				</div>
+			`;
+			container.appendChild(wrapper);
+		}
+
+		// ファイル開く
+		async function openFiles() {
+			try {
+				const handles = await window.showOpenFilePicker({ multiple: true });
+
+				for (const handle of handles) {
+					const file = await handle.getFile();
+					const fileId = `file-${fileIdCounter++}`;
+
+					fileHandles.set(fileId, handle);
+
+					if (isBinaryFile(file.name)) {
+						files.set(fileId, {
+							name: file.name,
+							content: '',
+							modified: false,
+							binary: true,
+							handle: handle
+						});
+
+						createTab(fileId, file.name);
+						showBinaryWarning(fileId, file.name);
+					} else {
+						const content = await file.text();
+
+						files.set(fileId, {
+							name: file.name,
+							content: content,
+							modified: false,
+							binary: false,
+							handle: handle
+						});
+
+						createTab(fileId, file.name);
+						createEditor(fileId, content, file.name);
+					}
+				}
+
+				hideWelcomeScreen();
+			} catch (err) {
+				if (err.name !== 'AbortError') {
+					showNotification('Failed to open file: ' + err.message, 'error');
+				}
+			}
+		}
+
+		// フォルダ開く
+		async function openFolder() {
+			try {
+				const dirHandle = await window.showDirectoryPicker();
+				await loadDirectory(dirHandle);
+				hideWelcomeScreen();
+			} catch (err) {
+				if (err.name !== 'AbortError') {
+					showNotification('Failed to open folder: ' + err.message, 'error');
+				}
+			}
+		}
+
+		// ディレクトリ読み込み
+		async function loadDirectory(dirHandle, parentPath = '') {
+			const path = parentPath ? `${parentPath}/${dirHandle.name}` : dirHandle.name;
+
+			fileTree.set(path, {
+				name: dirHandle.name,
+				type: 'folder',
+				children: [],
+				handle: dirHandle,
+				expanded: false
+			});
+
+			for await (const entry of dirHandle.values()) {
+				const entryPath = `${path}/${entry.name}`;
+
+				if (entry.kind === 'file') {
+					fileTree.set(entryPath, {
+						name: entry.name,
+						type: 'file',
+						handle: entry,
+						parent: path
+					});
+					fileTree.get(path).children.push(entryPath);
+				} else if (entry.kind === 'directory') {
+					await loadDirectory(entry, path);
+					fileTree.get(path).children.push(entryPath);
+				}
+			}
+
+			renderFileTree();
+		}
+
+		// ファイルツリー描画
+		function renderFileTree() {
+			const container = document.getElementById('file-tree');
+			container.innerHTML = '';
+
+			const rootFolders = Array.from(fileTree.keys()).filter(path => !path.includes('/'));
+
+			rootFolders.forEach(path => {
+				renderTreeItem(path, 0, container);
+			});
+
+			updateFileCount();
+		}
+
+		function renderTreeItem(path, level, container) {
+			const item = fileTree.get(path);
+			if (!item) return;
+
+			const div = document.createElement('div');
+			div.className = 'tree-item';
+			div.dataset.path = path;
+
+			const indent = document.createElement('span');
+			indent.className = 'tree-indent';
+			indent.style.width = `${level * 16}px`;
+			div.appendChild(indent);
+
+			if (item.type === 'folder') {
+				const arrow = document.createElement('span');
+				arrow.className = item.children.length > 0 ? 'tree-arrow' : 'tree-arrow empty';
+				arrow.textContent = '▶';
+				if (item.expanded) arrow.classList.add('expanded');
+				div.appendChild(arrow);
+
+				arrow.addEventListener('click', (e) => {
+					e.stopPropagation();
+					item.expanded = !item.expanded;
+					renderFileTree();
+				});
+			} else {
+				const arrow = document.createElement('span');
+				arrow.className = 'tree-arrow empty';
+				div.appendChild(arrow);
+			}
+
+			const icon = document.createElement('span');
+			icon.className = 'tree-icon';
+			icon.textContent = item.type === 'folder' ? '📁' : '📄';
+			div.appendChild(icon);
+
+			const label = document.createElement('span');
+			label.className = 'tree-label';
+			label.textContent = item.name;
+			div.appendChild(label);
+
+			div.addEventListener('click', async () => {
+				if (item.type === 'file') {
+					await openTreeFile(path);
+				}
+			});
+
+			container.appendChild(div);
+
+			if (item.type === 'folder' && item.expanded && item.children) {
+				item.children.forEach(childPath => {
+					renderTreeItem(childPath, level + 1, container);
+				});
+			}
+		}
+
+		// ツリーからファイルを開く（選択したもののみ）
+		async function openTreeFile(path) {
+			const item = fileTree.get(path);
+			if (!item || item.type !== 'file') return;
+
+			// 既に開いているかチェック
+			for (const [fileId, fileData] of files.entries()) {
+				if (fileData.path === path) {
+					switchToTab(fileId);
+					return;
+				}
+			}
+
+			try {
+				const file = await item.handle.getFile();
+				const fileId = `file-${fileIdCounter++}`;
+
+				fileHandles.set(fileId, item.handle);
+
+				if (isBinaryFile(file.name)) {
+					files.set(fileId, {
+						name: file.name,
+						content: '',
+						modified: false,
+						binary: true,
+						handle: item.handle,
+						path: path
+					});
+
+					createTab(fileId, file.name);
+					showBinaryWarning(fileId, file.name);
+				} else {
+					const content = await file.text();
+
+					files.set(fileId, {
+						name: file.name,
+						content: content,
+						modified: false,
+						binary: false,
+						handle: item.handle,
+						path: path
+					});
+
+					createTab(fileId, file.name);
+					createEditor(fileId, content, file.name);
+				}
+
+				hideWelcomeScreen();
+			} catch (err) {
+				showNotification('Failed to open file: ' + err.message, 'error');
+			}
+		}
+
+		// タブ作成
+		function createTab(fileId, filename) {
+			const tabBar = document.getElementById('tab-bar');
+			const tab = document.createElement('div');
+			tab.className = 'tab';
+			tab.dataset.fileId = fileId;
+
+			tab.innerHTML = `
+				<span class="tab-icon">📄</span>
+				<span class="tab-label">${filename}</span>
+				<span class="tab-close" onclick="closeTab('${fileId}', event)">×</span>
+			`;
+
+			tab.addEventListener('click', (e) => {
+				if (!e.target.classList.contains('tab-close')) {
+					switchToTab(fileId);
+				}
+			});
+
+			tabBar.appendChild(tab);
+			switchToTab(fileId);
+		}
+
+		// タブ切り替え
+		function switchToTab(fileId) {
+			activeFileId = fileId;
+
+			document.querySelectorAll('.tab').forEach(t => {
+				t.classList.toggle('active', t.dataset.fileId === fileId);
+			});
+
+			document.querySelectorAll('.editor-wrapper').forEach(w => {
+				w.classList.toggle('active', w.id === `editor-${fileId}`);
+			});
+
+			const fileData = files.get(fileId);
+			if (fileData) {
+				document.getElementById('current-file-name').textContent = fileData.name;
+			}
+		}
+
+		// エディタ作成
+		function createEditor(fileId, content, filename) {
+			const container = document.getElementById('editor-container');
+			const wrapper = document.createElement('div');
+			wrapper.className = 'editor-wrapper';
+			wrapper.id = `editor-${fileId}`;
+			container.appendChild(wrapper);
+
+			const editor = monaco.editor.create(wrapper, {
+				value: content,
+				language: getLanguageFromFilename(filename),
+				theme: 'vs-dark',
+				automaticLayout: true,
+				fontSize: 14,
+				minimap: { enabled: true },
+				scrollBeyondLastLine: false
+			});
+
+			editor.onDidChangeModelContent(() => {
+				const fileData = files.get(fileId);
+				if (fileData && !fileData.binary) {
+					fileData.content = editor.getValue();
+					fileData.modified = true;
+					updateTabModifiedState(fileId);
+				}
+			});
+
+			editors.set(fileId, editor);
+		}
+
+		// ファイル名から言語を推定
+		function getLanguageFromFilename(filename) {
+			const ext = filename.split('.').pop().toLowerCase();
+			const languageMap = {
+				'js': 'javascript',
+				'ts': 'typescript',
+				'jsx': 'javascript',
+				'tsx': 'typescript',
+				'json': 'json',
+				'html': 'html',
+				'css': 'css',
+				'scss': 'scss',
+				'py': 'python',
+				'java': 'java',
+				'cpp': 'cpp',
+				'c': 'c',
+				'cs': 'csharp',
+				'php': 'php',
+				'rb': 'ruby',
+				'go': 'go',
+				'rs': 'rust',
+				'sql': 'sql',
+				'md': 'markdown',
+				'xml': 'xml',
+				'yaml': 'yaml',
+				'yml': 'yaml'
+			};
+			return languageMap[ext] || 'plaintext';
+		}
+
+		// タブの修正状態を更新
+		function updateTabModifiedState(fileId) {
+			const tab = document.querySelector(`[data-file-id="${fileId}"]`);
+			const fileData = files.get(fileId);
+			if (tab && fileData) {
+				tab.classList.toggle('modified', fileData.modified);
+			}
+		}
+
+		// タブを閉じる
+		function closeTab(fileId, event) {
+			event?.stopPropagation();
+
+			const fileData = files.get(fileId);
+			if (fileData && fileData.modified) {
+				if (!confirm(`Save changes to ${fileData.name}?`)) {
+					return;
+				}
+			}
+
+			const tab = document.querySelector(`[data-file-id="${fileId}"]`);
+			const wrapper = document.getElementById(`editor-${fileId}`);
+
+			if (tab) tab.remove();
+			if (wrapper) wrapper.remove();
+
+			const editor = editors.get(fileId);
+			if (editor) {
+				editor.dispose();
+				editors.delete(fileId);
+			}
+
+			files.delete(fileId);
+			fileHandles.delete(fileId);
+
+			const remainingTabs = document.querySelectorAll('.tab');
+			if (remainingTabs.length > 0) {
+				const nextFileId = remainingTabs[0].dataset.fileId;
+				switchToTab(nextFileId);
+			} else {
+				activeFileId = null;
+				document.getElementById('current-file-name').textContent = '';
+				showWelcomeScreen();
+			}
+		}
+
+		// ウェルカム画面制御
+		function hideWelcomeScreen() {
+			document.getElementById('welcome-screen').style.display = 'none';
+		}
+
+		function showWelcomeScreen() {
+			document.getElementById('welcome-screen').style.display = 'flex';
+		}
+
+		// 全ファイルで検索
+		async function searchInFiles() {
+			const searchText = document.getElementById('search-text').value;
+			if (!searchText) {
+				showNotification('Please enter search text', 'error');
+				return;
+			}
+
+			const matchCase = document.getElementById('search-case').classList.contains('active');
+			const useRegex = document.getElementById('search-regex').classList.contains('active');
+			const resultsContainer = document.getElementById('search-results');
+
+			resultsContainer.innerHTML = '';
+			searchResultsData = [];
+
+			showProgress('Searching...');
+
+			try {
+				let regex;
+				if (useRegex) {
+					regex = new RegExp(searchText, matchCase ? 'g' : 'gi');
+				} else {
+					const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+					regex = new RegExp(escaped, matchCase ? 'g' : 'gi');
+				}
+
+				// 開いているファイルを検索
+				for (const [fileId, fileData] of files.entries()) {
+					if (fileData.binary) continue;
+
+					const lines = fileData.content.split('\n');
+					lines.forEach((line, index) => {
+						if (regex.test(line)) {
+							searchResultsData.push({
+								fileId,
+								fileName: fileData.name,
+								lineNumber: index + 1,
+								lineContent: line,
+								searchText
+							});
+						}
+					});
+				}
+
+				// ツリー内のファイルも検索
+				for (const [path, item] of fileTree.entries()) {
+					if (item.type === 'file' && !isBinaryFile(item.name)) {
+						// 既に開いているファイルはスキップ
+						let alreadyOpen = false;
+						for (const fileData of files.values()) {
+							if (fileData.path === path) {
+								alreadyOpen = true;
+								break;
+							}
+						}
+
+						if (!alreadyOpen) {
+							try {
+								const file = await item.handle.getFile();
+								const content = await file.text();
+								const lines = content.split('\n');
+
+								lines.forEach((line, index) => {
+									if (regex.test(line)) {
+										searchResultsData.push({
+											filePath: path,
+											fileName: item.name,
+											lineNumber: index + 1,
+											lineContent: line,
+											searchText
+										});
+									}
+								});
+							} catch (err) {
+								console.error('Error reading file:', err);
+							}
+						}
+					}
+				}
+
+				displaySearchResults();
+				hideProgress();
+
+				showNotification(`Found ${searchResultsData.length} results`);
+			} catch (err) {
+				hideProgress();
+				showNotification('Search failed: ' + err.message, 'error');
+			}
+		}
+
+		// 検索結果を表示
+		function displaySearchResults() {
+			const resultsContainer = document.getElementById('search-results');
+			resultsContainer.innerHTML = '';
+
+			if (searchResultsData.length === 0) {
+				resultsContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #858585;">No results found</div>';
+				return;
+			}
+
+			searchResultsData.forEach((result, index) => {
+				const item = document.createElement('div');
+				item.className = 'search-result-item';
+				item.dataset.index = index;
+
+				const matchCase = document.getElementById('search-case').classList.contains('active');
+				const regex = new RegExp(
+					result.searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+					matchCase ? 'g' : 'gi'
+				);
+
+				const highlightedLine = result.lineContent.replace(regex, match =>
+					`<span class="search-result-match">${match}</span>`
+				);
+
+				item.innerHTML = `
+					<div class="search-result-file">${result.fileName} (Line ${result.lineNumber})</div>
+					<div class="search-result-line">${highlightedLine}</div>
+				`;
+
+				item.addEventListener('click', () => openSearchResult(result));
+				resultsContainer.appendChild(item);
+			});
+		}
+
+		// 検索結果を開く
+		async function openSearchResult(result) {
+			if (result.fileId) {
+				// 既に開いているファイル
+				switchToTab(result.fileId);
+				const editor = editors.get(result.fileId);
+				if (editor) {
+					editor.revealLineInCenter(result.lineNumber);
+					editor.setPosition({ lineNumber: result.lineNumber, column: 1 });
+				}
+			} else if (result.filePath) {
+				// ツリーからファイルを開く
+				await openTreeFile(result.filePath);
+				// 少し待ってからジャンプ
+				setTimeout(() => {
+					const editor = editors.get(activeFileId);
+					if (editor) {
+						editor.revealLineInCenter(result.lineNumber);
+						editor.setPosition({ lineNumber: result.lineNumber, column: 1 });
+					}
+				}, 100);
+			}
+		}
+
+		// ファイル内で置換
+		async function replaceInFiles() {
+			const searchText = document.getElementById('search-text').value;
+			const replaceText = document.getElementById('replace-text').value;
+
+			if (!searchText) {
+				showNotification('Please enter search text', 'error');
+				return;
+			}
+
+			if (!confirm(`Replace all occurrences of "${searchText}" with "${replaceText}"?`)) {
+				return;
+			}
+
+			const matchCase = document.getElementById('search-case').classList.contains('active');
+			const useRegex = document.getElementById('search-regex').classList.contains('active');
+
+			let count = 0;
+
+			try {
+				let regex;
+				if (useRegex) {
+					regex = new RegExp(searchText, matchCase ? 'g' : 'gi');
+				} else {
+					const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+					regex = new RegExp(escaped, matchCase ? 'g' : 'gi');
+				}
+
+				// 開いているファイルで置換
+				for (const [fileId, fileData] of files.entries()) {
+					if (fileData.binary) continue;
+
+					const editor = editors.get(fileId);
+					if (editor) {
+						const content = editor.getValue();
+						const newContent = content.replace(regex, replaceText);
+						if (content !== newContent) {
+							editor.setValue(newContent);
+							count++;
+						}
+					}
+				}
+
+				showNotification(`Replaced in ${count} file(s)`);
+			} catch (err) {
+				showNotification('Replace failed: ' + err.message, 'error');
+			}
+		}
+
+		// 現在のファイルを保存
+		async function saveCurrentFile() {
+			if (!activeFileId) return;
+
+			const fileData = files.get(activeFileId);
+			const handle = fileHandles.get(activeFileId);
+
+			if (!fileData || !handle) {
+				showNotification('Cannot save: file handle not found', 'error');
+				return;
+			}
+
+			if (fileData.binary) {
+				showNotification('Cannot save binary files', 'error');
+				return;
+			}
+
+			try {
+				const editor = editors.get(activeFileId);
+				const content = editor.getValue();
+
+				const writable = await handle.createWritable();
+				await writable.write(content);
+				await writable.close();
+
+				fileData.modified = false;
+				fileData.content = content;
+				updateTabModifiedState(activeFileId);
+
+				showNotification('File saved successfully');
+			} catch (err) {
+				showNotification('Failed to save file: ' + err.message, 'error');
+			}
+		}
+
+		// 全ファイルを保存
+		async function saveAllFiles() {
+			let saved = 0;
+
+			for (const [fileId, fileData] of files.entries()) {
+				if (fileData.modified && !fileData.binary) {
+					const handle = fileHandles.get(fileId);
+					if (handle) {
+						try {
+							const editor = editors.get(fileId);
+							const content = editor.getValue();
+
+							const writable = await handle.createWritable();
+							await writable.write(content);
+							await writable.close();
+
+							fileData.modified = false;
+							fileData.content = content;
+							updateTabModifiedState(fileId);
+							saved++;
+						} catch (err) {
+							console.error('Failed to save:', err);
+						}
+					}
+				}
+			}
+
+			showNotification(`Saved ${saved} file(s)`);
+		}
+
+		// コード整形
+		function formatCode() {
+			if (!activeFileId) return;
+
+			const editor = editors.get(activeFileId);
+			if (editor) {
+				editor.getAction('editor.action.formatDocument').run();
+				showNotification('Code formatted');
+			}
+		}
+
+		// 新規ファイル作成
+		function createNewFile() {
+			const filename = prompt('Enter file name:');
+			if (!filename) return;
+
+			const fileId = `file-${fileIdCounter++}`;
+
+			files.set(fileId, {
+				name: filename,
+				content: '',
+				modified: true,
+				binary: false,
+				handle: null
+			});
+
+			createTab(fileId, filename);
+			createEditor(fileId, '', filename);
+			hideWelcomeScreen();
+		}
+
+		// 新規フォルダ作成
+		function createNewFolder() {
+			showNotification('Folder creation is not yet implemented', 'error');
+		}
+
+		// Gitクローン表示
+		function showGitClone() {
+			switchPanel('git');
+		}
+
+		// リポジトリをクローン
+		async function cloneRepository() {
+			const token = document.getElementById('github-token').value;
+			const repo = document.getElementById('github-repo').value;
+			const branch = document.getElementById('github-branch').value || 'main';
+
+			if (!repo) {
+				showGitStatus('Please enter repository URL', 'error');
+				return;
+			}
+
+			showProgress('Cloning repository...');
+
+			try {
+				const repoMatch = repo.match(/github\.com\/([^\/]+)\/([^\/\.]+)/);
+				if (!repoMatch) {
+					throw new Error('Invalid GitHub repository URL');
+				}
+
+				const owner = repoMatch[1];
+				const repoName = repoMatch[2];
+
+				const headers = {
+					'Accept': 'application/vnd.github.v3+json'
+				};
+
+				if (token) {
+					headers['Authorization'] = `token ${token}`;
+				}
+
+				// リポジトリ情報を取得
+				const apiUrl = `https://api.github.com/repos/${owner}/${repoName}/git/trees/${branch}?recursive=1`;
+				const response = await fetch(apiUrl, { headers });
+
+				if (!response.ok) {
+					throw new Error(`GitHub API error: ${response.status}`);
+				}
+
+				const data = await response.json();
+				const files = data.tree.filter(item => item.type === 'blob');
+
+				// DBに保存
+				const repoData = {
+					name: repoName,
+					owner: owner,
+					url: repo,
+					branch: branch,
+					clonedAt: new Date().toISOString(),
+					files: files.map(f => ({
+						path: f.path,
+						sha: f.sha,
+						url: f.url
+					}))
+				};
+
+				await saveRepository(repoData);
+				await loadRepositories();
+
+				hideProgress();
+				showGitStatus(`Successfully cloned ${owner}/${repoName}`, 'success');
+			} catch (err) {
+				hideProgress();
+				showGitStatus('Clone failed: ' + err.message, 'error');
+			}
+		}
+
+		// リポジトリ一覧を読み込み
+		async function loadRepositories() {
+			const repos = await getRepositories();
+			const container = document.getElementById('repo-list');
+			container.innerHTML = '';
+
+			if (repos.length === 0) {
+				container.innerHTML = '<div style="padding: 20px; text-align: center; color: #858585;">No repositories cloned</div>';
+				return;
+			}
+
+			repos.forEach(repo => {
+				const item = document.createElement('div');
+				item.className = 'repo-item';
+				item.innerHTML = `
+					<div class="repo-info">
+						<div class="repo-name">${repo.owner}/${repo.name}</div>
+						<div class="repo-url">${repo.branch} • ${new Date(repo.clonedAt).toLocaleDateString()}</div>
+					</div>
+					<button class="repo-delete" onclick="deleteRepo(${repo.id}, event)">Delete</button>
+				`;
+
+				item.addEventListener('click', (e) => {
+					if (!e.target.classList.contains('repo-delete')) {
+						loadRepositoryFiles(repo);
+					}
+				});
+
+				container.appendChild(item);
+			});
+		}
+
+		// リポジトリのファイルを読み込み
+		async function loadRepositoryFiles(repo) {
+			showProgress('Loading repository files...');
+
+			try {
+				// ファイルツリーをクリア
+				fileTree.clear();
+				document.getElementById('file-tree').innerHTML = '';
+
+				// ルートフォルダを作成
+				const rootPath = repo.name;
+				fileTree.set(rootPath, {
+					name: repo.name,
+					type: 'folder',
+					children: [],
+					expanded: true,
+					isRepo: true
+				});
+
+				// ファイルを追加
+				for (const file of repo.files) {
+					const parts = file.path.split('/');
+					let currentPath = rootPath;
+
+					// フォルダ構造を作成
+					for (let i = 0; i < parts.length - 1; i++) {
+						const folderPath = `${currentPath}/${parts[i]}`;
+
+						if (!fileTree.has(folderPath)) {
+							fileTree.set(folderPath, {
+								name: parts[i],
+								type: 'folder',
+								children: [],
+								expanded: false,
+								parent: currentPath
+							});
+
+							fileTree.get(currentPath).children.push(folderPath);
+						}
+
+						currentPath = folderPath;
+					}
+
+					// ファイルを追加
+					const fileName = parts[parts.length - 1];
+					const filePath = `${currentPath}/${fileName}`;
+
+					fileTree.set(filePath, {
+						name: fileName,
+						type: 'file',
+						parent: currentPath,
+						repoFile: file,
+						repo: repo
+					});
+
+					fileTree.get(currentPath).children.push(filePath);
+				}
+
+				renderFileTree();
+				switchPanel('files');
+				hideProgress();
+				showNotification(`Loaded ${repo.owner}/${repo.name}`);
+			} catch (err) {
+				hideProgress();
+				showNotification('Failed to load repository: ' + err.message, 'error');
+			}
+		}
+
+		// リポジトリを削除
+		async function deleteRepo(id, event) {
+			event?.stopPropagation();
+
+			if (!confirm('Delete this repository from the list?')) {
+				return;
+			}
+
+			try {
+				await deleteRepository(id);
+				await loadRepositories();
+				showNotification('Repository deleted');
+			} catch (err) {
+				showNotification('Failed to delete repository: ' + err.message, 'error');
+			}
+		}
+
+		// Git状態メッセージを表示
+		function showGitStatus(message, type = 'success') {
+			const status = document.getElementById('git-status');
+			status.textContent = message;
+			status.className = `git-status show ${type}`;
+
+			setTimeout(() => {
+				status.classList.remove('show');
+			}, 5000);
+		}
+
+		// ファイル数を更新
+		function updateFileCount() {
+			const count = Array.from(fileTree.values()).filter(item => item.type === 'file').length;
+			document.getElementById('file-count').textContent = count;
+		}
+
+		// UI制御
+		function showProgress(text) {
+			document.getElementById('progress-text').textContent = text;
+			document.getElementById('progress-overlay').classList.add('show');
+		}
+
+		function hideProgress() {
+			document.getElementById('progress-overlay').classList.remove('show');
+		}
+
+		function showNotification(message, type = 'success') {
+			const notification = document.createElement('div');
+			notification.className = 'notification';
+			notification.textContent = message;
+			if (type === 'error') {
+				notification.style.background = '#f44336';
+			}
+			document.body.appendChild(notification);
+			setTimeout(() => notification.remove(), 3000);
+		}
+
+		// キーボードショートカット
+		function setupKeyboardShortcuts() {
+			document.addEventListener('keydown', (e) => {
+				if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+					e.preventDefault();
+					saveCurrentFile();
+				} else if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+					e.preventDefault();
+					switchPanel('search');
+				} else if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+					e.preventDefault();
+					openFiles();
+				}
+			});
+		}
+	</script>
+
+</body>
+
+</html>

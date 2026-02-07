@@ -102,5 +102,8 @@
 	"alias": {
 		"process": false,
 		"buffer": false
+	},
+	"dependencies": {
+		"monaco-editor": "^0.55.1"
 	}
 }
