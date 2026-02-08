@@ -32,12 +32,12 @@
     "build-monaco-editor": "ts-node ./build/build-monaco-editor",
     "build-lsp": "cd monaco-lsp-client && npm install && npm run build"
   },
-  "typings": "./esm/vs/editor/editor.main.d.ts",
+  "typings": "./esm/vs/editor/baram-editor-main.d.ts",
   "main": "./min/vs/editor/baram-editor-main.js",
   "module": "./esm/vs/editor/baram-editor-main.js",
   "exports": {
     ".": {
-      "types": "./esm/vs/editor/editor.main.d.ts",
+      "types": "./esm/vs/editor/baram-editor-main.d.ts",
       "import": "./esm/vs/editor/baram-editor-main.js",
       "require": "./min/vs/editor/baram-editor-main.js"
     },

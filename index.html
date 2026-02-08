@@ -1579,7 +1579,7 @@
 		let jsEditor;
 
 		window.require.config({ paths: { vs: "/barammodules/monaco-editor/min/vs" } });
-		window.require(["vs/editor/editor.main"], () => {
+		window.require(["vs/editor/baram-editor-main"], () => {
 			monaco.editor.defineTheme("baramLight", {
 				base: "vs",
 				inherit: true,
