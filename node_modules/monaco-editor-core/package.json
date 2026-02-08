@@ -1,0 +1,22 @@
+{
+  "name": "monaco-editor-core",
+  "private": false,
+  "version": "0.56.0-dev-20260203",
+  "description": "A browser based code editor",
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "typings": "./esm/vs/editor/editor.api.d.ts",
+  "module": "./esm/vs/editor/editor.main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/microsoft/vscode/issues"
+  },
+  "vscodeCommitId": "8d864503e1d96ad37e2c4b001b330a75b03261cb",
+  "dependencies": {
+    "marked": "14.0.0",
+    "dompurify": "3.2.7"
+  }
+}
