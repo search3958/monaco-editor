@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Baram Code</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap");
+
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f0e8;
+      --bg-ink: #1a1a1a;
+      --panel: #fffdf9;
+      --panel-strong: #ffffff;
+      --border: #e2d9cc;
+      --accent: #0b7a75;
+      --accent-strong: #08645f;
+      --muted: #746a5c;
+      --shadow: 0 28px 60px -42px rgba(22, 18, 9, 0.6);
+      --bg-gradient: radial-gradient(circle at top left, #fff8ee 0%, #f6f0e8 45%, #efe4d4 100%);
+      --button-secondary-bg: #f0e6d6;
+      --button-secondary-text: #2a231c;
+      --chip-bg: rgba(11, 122, 117, 0.12);
+      --chip-text: #0b7a75;
+      --card-bg: #fffdf9;
+      --card-input: #1a1a1a;
+      --card-hover: #ffffff;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #15110d;
+        --bg-ink: #f2e9dd;
+        --panel: #231d17;
+        --panel-strong: #2d261f;
+        --border: #3a3229;
+        --accent: #4cc9b0;
+        --accent-strong: #3bb39e;
+        --muted: #b7a997;
+        --shadow: 0 30px 70px -48px rgba(0, 0, 0, 0.8);
+        --bg-gradient: radial-gradient(circle at top left, #2b241d 0%, #191511 55%, #120f0c 100%);
+        --button-secondary-bg: #2c2620;
+        --button-secondary-text: #f2e9dd;
+        --chip-bg: rgba(76, 201, 176, 0.16);
+        --chip-text: #9fe8d6;
+        --card-bg: #241f1a;
+        --card-input: #f2e9dd;
+        --card-hover: #2c261f;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--bg-ink);
+      font-family: "Space Grotesk", "Noto Sans JP", sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    body::before {
+      background:
+        radial-gradient(circle at 15% 10%, rgba(11, 122, 117, 0.18), transparent 55%),
+        radial-gradient(circle at 80% 15%, rgba(234, 185, 118, 0.18), transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(72, 91, 126, 0.16), transparent 55%);
+      opacity: 0.8;
+    }
+
+    body::after {
+      backdrop-filter: blur(40px);
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      box-shadow: 0 10px 20px -12px rgba(11, 122, 117, 0.7);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: var(--accent-strong);
+    }
+
+    button.secondary {
+      background: var(--button-secondary-bg);
+      color: var(--button-secondary-text);
+      box-shadow: none;
+      border: 1px solid var(--border);
+    }
+
+    button.ghost {
+      background: transparent;
+      color: var(--muted);
+      box-shadow: none;
+      border: 1px solid var(--border);
+    }
+
+    .landing {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 40px;
+      display: grid;
+      grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.4fr);
+      gap: 32px;
+      position: relative;
+    }
+
+    .intro {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      z-index: 1;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-title {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.28em;
+      color: var(--muted);
+    }
+
+    .brand-chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--chip-bg);
+      color: var(--chip-text);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .hero-greeting {
+      font-size: clamp(2.4rem, 3.6vw, 3.6rem);
+      font-weight: 600;
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    .hero-subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .metric span {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .metric strong {
+      font-size: 1.3rem;
+    }
+
+    .projects {
+      background: rgba(255, 253, 249, 0.6);
+      border: 1px solid rgba(226, 217, 204, 0.7);
+      border-radius: 24px;
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 60vh;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+
+    .section-meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      padding: 6px 2px 12px;
+      max-height: calc(100vh - 220px);
+      overflow-y: auto;
+    }
+
+    .project-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.2s ease, border 0.2s ease, background 0.2s ease;
+    }
+
+    .project-card:hover {
+      transform: translateY(-4px);
+      background: var(--card-hover);
+      border-color: rgba(11, 122, 117, 0.3);
+    }
+
+    .project-card input {
+      border: none;
+      background: transparent;
+      font-size: 1rem;
+      font-weight: 600;
+      outline: none;
+      color: var(--card-input);
+    }
+
+    .project-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .project-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .empty {
+      background: var(--panel);
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .landing {
+        grid-template-columns: 1fr;
+      }
+
+      .intro {
+        position: static;
+      }
+
+      .projects {
+        min-height: auto;
+      }
+
+      .project-grid {
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="landing">
+    <section class="intro">
+      <div class="brand-row">
+        <div class="brand-title">Baram Code</div>
+        <div class="brand-chip">Local Playground</div>
+      </div>
+      <h1 class="hero-greeting" id="greeting"></h1>
+      <p class="hero-subtitle">Craft, test, and refine small ideas fast. Everything stays in your browser.</p>
+      <div class="hero-actions">
+        <button id="newProjectBtn">New Project</button>
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <span>Projects</span>
+          <strong id="projectCount">0</strong>
+        </div>
+        <div class="metric">
+          <span>Last Update</span>
+          <strong id="projectUpdated">—</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="projects">
+      <div class="section-head">
+        <div>
+          <h2>Projects</h2>
+          <div class="section-meta" id="projectSummary">0 projects</div>
+        </div>
+      </div>
+      <div id="projectGrid" class="project-grid"></div>
+    </section>
+  </main>
+
+  <script>
+    const defaultContent = {
+      html: `\n<div class="card">\n  <h1>Baram Playground</h1>\n  <p>Edit HTML, CSS, and JS. CSS updates can hot reload without resetting JS.</p>\n  <button class="pulse">Try me</button>\n  <div class="count">Clicks: <span id="count">0</span></div>\n</div>\n`,
+      css: `\n* {\n  box-sizing: border-box;\n}\n\nbody {\n  margin: 0;\n  font-family: "Space Grotesk", sans-serif;\n  background: radial-gradient(circle at top, #fff, #f3f1ec 60%);\n  color: #1d1b16;\n  min-height: 100vh;\n  display: grid;\n  place-items: center;\n  padding: 32px;\n}\n\n.card {\n  background: #ffffff;\n  border: 1px solid #e0d7c9;\n  border-radius: 20px;\n  padding: 28px 32px;\n  width: min(520px, 92vw);\n  box-shadow: 0 24px 40px -28px rgba(30, 24, 15, 0.5);\n}\n\n.card h1 {\n  margin-top: 0;\n  font-size: 2.1rem;\n}\n\n.card p {\n  color: #5a5145;\n}\n\n.pulse {\n  margin-top: 16px;\n  border: none;\n  border-radius: 999px;\n  padding: 12px 18px;\n  font-weight: 600;\n  cursor: pointer;\n  background: #0b7a75;\n  color: #fff;\n  box-shadow: 0 16px 30px -20px rgba(11, 122, 117, 0.8);\n  transition: transform 0.2s ease;\n}\n\n.pulse:hover {\n  transform: translateY(-2px);\n}\n\n.count {\n  margin-top: 18px;\n  font-weight: 600;\n}\n`,
+      js: `\nconst button = document.querySelector('.pulse');\nconst counter = document.querySelector('#count');\nlet value = 0;\n\nbutton?.addEventListener('click', () => {\n  value += 1;\n  if (counter) counter.textContent = String(value);\n});\n`,
+    };
+
+    const DB_KEY = "baram-projects-v1";
+    const LEGACY_KEY = "baram-playground";
+
+    const greetings = [
+      "こんにちは！お仕事中ですか？開始しましょう！今日は何をしますか？",
+      "さあ始めましょう。今日のアイデアは？",
+      "準備OK？新しいプロジェクトを作りましょう。",
+      "やる気満々ですね。何を作りますか？",
+      "今日はどんなUIにしますか？",
+      "こんにちは！コードを書く時間です。",
+      "次の作品、ここから始まります。",
+      "思いついたらすぐ試しましょう。",
+      "小さな実験でも大歓迎です。",
+      "新しいレイアウト、試してみませんか？",
+      "集中タイムです。始めますか？",
+      "デザインの冒険へ。",
+      "一行目から始めましょう。",
+      "今日は何を磨きますか？",
+      "こんにちは！まずは試作から。",
+      "ここはあなたのワークショップ。",
+      "新しい動き、試してみよう。",
+      "アイデアの火花、今すぐ形に。",
+      "今の気分は？ミニプロジェクトでもOK。",
+      "今日のテーマは何ですか？",
+      "集中する準備はできましたか？",
+      "さあ、試し書きからいきましょう。",
+      "こんにちは！一緒に作りましょう。",
+      "コードとデザインの時間です。",
+      "ひらめいたらすぐ実装。",
+      "整えて、動かして、完成へ。",
+      "今日はどんな実験を？",
+      "Baram Codeへようこそ。",
+    ];
+
+    function loadDb() {
+      try {
+        const raw = localStorage.getItem(DB_KEY);
+        return raw ? JSON.parse(raw) : { projects: {}, lastProjectId: null };
+      } catch (error) {
+        return { projects: {}, lastProjectId: null };
+      }
+    }
+
+    function saveDb(db) {
+      localStorage.setItem(DB_KEY, JSON.stringify(db));
+    }
+
+    function createId() {
+      if (window.crypto?.randomUUID) {
+        return window.crypto.randomUUID();
+      }
+      return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function createProject(name) {
+      const now = new Date().toISOString();
+      const htmlFile = { id: createId(), name: "index.html", content: defaultContent.html };
+      const cssFile = { id: createId(), name: "styles.css", content: defaultContent.css };
+      const jsFile = { id: createId(), name: "app.js", content: defaultContent.js };
+
+      return {
+        id: createId(),
+        name: name || "Baram Live Preview",
+        createdAt: now,
+        updatedAt: now,
+        files: {
+          html: [htmlFile],
+          css: [cssFile],
+          js: [jsFile],
+        },
+        active: {
+          html: htmlFile.id,
+          css: cssFile.id,
+          js: jsFile.id,
+        },
+        settings: {
+          autoUpdate: true,
+          cssHot: true,
+          previewLayout: "right",
+          editorLayout: "block",
+          filesCollapsed: false,
+          groupCollapsed: { html: false, css: false, js: false },
+          editorSizes: { block: {}, flex: {} },
+          previewSize: { right: null, bottom: null },
+        },
+      };
+    }
+
+    function migrateLegacy(db) {
+      if (db && Object.keys(db.projects || {}).length) return db;
+      const legacyRaw = localStorage.getItem(LEGACY_KEY);
+      if (!legacyRaw) return db;
+      try {
+        const legacy = JSON.parse(legacyRaw);
+        const project = createProject("Baram Live Preview");
+        project.files.html[0].content = legacy.html || defaultContent.html;
+        project.files.css[0].content = legacy.css || defaultContent.css;
+        project.files.js[0].content = legacy.js || defaultContent.js;
+        project.files.css[0].name = legacy.cssName || project.files.css[0].name;
+        project.files.js[0].name = legacy.jsName || project.files.js[0].name;
+        project.settings.autoUpdate = legacy.autoUpdate ?? true;
+        project.settings.cssHot = legacy.cssHot ?? true;
+        project.settings.previewLayout = legacy.layout || "right";
+        db.projects[project.id] = project;
+        db.lastProjectId = project.id;
+        saveDb(db);
+        return db;
+      } catch (error) {
+        return db;
+      }
+    }
+
+    function sanitizeFileName(name) {
+      return name.replace(/[^a-z0-9\-_]+/gi, "-").replace(/^-+|-+$/g, "") || "project";
+    }
+
+    function getDosTime(date) {
+      return (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+    }
+
+    function getDosDate(date) {
+      return ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+    }
+
+    const crcTable = (() => {
+      const table = new Uint32Array(256);
+      for (let i = 0; i < 256; i += 1) {
+        let value = i;
+        for (let j = 0; j < 8; j += 1) {
+          value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
+        }
+        table[i] = value >>> 0;
+      }
+      return table;
+    })();
+
+    function crc32(buffer) {
+      let crc = 0xffffffff;
+      for (let i = 0; i < buffer.length; i += 1) {
+        crc = (crc >>> 8) ^ crcTable[(crc ^ buffer[i]) & 0xff];
+      }
+      return (crc ^ 0xffffffff) >>> 0;
+    }
+
+    function createZipBlob(entries) {
+      const encoder = new TextEncoder();
+      const date = new Date();
+      const dosTime = getDosTime(date);
+      const dosDate = getDosDate(date);
+
+      let offset = 0;
+      const localParts = [];
+      const centralParts = [];
+
+      entries.forEach((entry) => {
+        const nameBytes = encoder.encode(entry.name);
+        const dataBytes = encoder.encode(entry.content || "");
+        const crc = crc32(dataBytes);
+
+        const localHeader = new Uint8Array(30 + nameBytes.length);
+        const localView = new DataView(localHeader.buffer);
+        localView.setUint32(0, 0x04034b50, true);
+        localView.setUint16(4, 20, true);
+        localView.setUint16(6, 0, true);
+        localView.setUint16(8, 0, true);
+        localView.setUint16(10, dosTime, true);
+        localView.setUint16(12, dosDate, true);
+        localView.setUint32(14, crc, true);
+        localView.setUint32(18, dataBytes.length, true);
+        localView.setUint32(22, dataBytes.length, true);
+        localView.setUint16(26, nameBytes.length, true);
+        localView.setUint16(28, 0, true);
+        localHeader.set(nameBytes, 30);
+
+        localParts.push(localHeader, dataBytes);
+
+        const centralHeader = new Uint8Array(46 + nameBytes.length);
+        const centralView = new DataView(centralHeader.buffer);
+        centralView.setUint32(0, 0x02014b50, true);
+        centralView.setUint16(4, 20, true);
+        centralView.setUint16(6, 20, true);
+        centralView.setUint16(8, 0, true);
+        centralView.setUint16(10, 0, true);
+        centralView.setUint16(12, dosTime, true);
+        centralView.setUint16(14, dosDate, true);
+        centralView.setUint32(16, crc, true);
+        centralView.setUint32(20, dataBytes.length, true);
+        centralView.setUint32(24, dataBytes.length, true);
+        centralView.setUint16(28, nameBytes.length, true);
+        centralView.setUint16(30, 0, true);
+        centralView.setUint16(32, 0, true);
+        centralView.setUint16(34, 0, true);
+        centralView.setUint16(36, 0, true);
+        centralView.setUint32(38, 0, true);
+        centralView.setUint32(42, offset, true);
+        centralHeader.set(nameBytes, 46);
+        centralParts.push(centralHeader);
+
+        offset += localHeader.length + dataBytes.length;
+      });
+
+      const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+      const centralOffset = offset;
+
+      const endRecord = new Uint8Array(22);
+      const endView = new DataView(endRecord.buffer);
+      endView.setUint32(0, 0x06054b50, true);
+      endView.setUint16(4, 0, true);
+      endView.setUint16(6, 0, true);
+      endView.setUint16(8, entries.length, true);
+      endView.setUint16(10, entries.length, true);
+      endView.setUint32(12, centralSize, true);
+      endView.setUint32(16, centralOffset, true);
+      endView.setUint16(20, 0, true);
+
+      return new Blob([...localParts, ...centralParts, endRecord], { type: "application/zip" });
+    }
+
+    function downloadZip(project) {
+      const files = [
+        ...project.files.html,
+        ...project.files.css,
+        ...project.files.js,
+      ].map((file) => ({ name: file.name, content: file.content }));
+
+      const blob = createZipBlob(files);
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${sanitizeFileName(project.name)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
+
+    const projectGrid = document.getElementById("projectGrid");
+    const newProjectBtn = document.getElementById("newProjectBtn");
+    const greetingEl = document.getElementById("greeting");
+    const projectCountEl = document.getElementById("projectCount");
+    const projectUpdatedEl = document.getElementById("projectUpdated");
+    const projectSummaryEl = document.getElementById("projectSummary");
+
+    if (greetingEl) {
+      const index = Math.floor(Math.random() * greetings.length);
+      greetingEl.textContent = greetings[index];
+    }
+
+    let db = migrateLegacy(loadDb());
+
+    function formatDate(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      return date.toLocaleString();
+    }
+
+    function updateSummary(projects) {
+      if (projectCountEl) projectCountEl.textContent = String(projects.length);
+      if (projectSummaryEl) {
+        projectSummaryEl.textContent = projects.length ? `${projects.length} projects` : "No projects yet";
+      }
+      const latest = projects
+        .map((project) => project.updatedAt)
+        .filter(Boolean)
+        .sort()
+        .pop();
+      if (projectUpdatedEl) {
+        projectUpdatedEl.textContent = latest ? formatDate(latest) : "—";
+      }
+    }
+
+    function renderProjects() {
+      const projects = Object.values(db.projects || {});
+      projects.sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+
+      projectGrid.innerHTML = "";
+      updateSummary(projects);
+
+      if (!projects.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No projects yet. Create your first project.";
+        projectGrid.appendChild(empty);
+        return;
+      }
+
+      projects.forEach((project) => {
+        const card = document.createElement("div");
+        card.className = "project-card";
+
+        const nameInput = document.createElement("input");
+        nameInput.value = project.name || "Baram Live Preview";
+        nameInput.addEventListener("input", () => {
+          project.name = nameInput.value.trim() || "Baram Live Preview";
+          project.updatedAt = new Date().toISOString();
+          db.projects[project.id] = project;
+          saveDb(db);
+          updateSummary(Object.values(db.projects || {}));
+        });
+
+        const meta = document.createElement("div");
+        meta.className = "project-meta";
+        meta.textContent = `Updated: ${formatDate(project.updatedAt)}`;
+
+        const actions = document.createElement("div");
+        actions.className = "project-actions";
+
+        const openBtn = document.createElement("button");
+        openBtn.textContent = "Open";
+        openBtn.addEventListener("click", () => {
+          db.lastProjectId = project.id;
+          saveDb(db);
+          window.location.href = `index.html?id=${project.id}`;
+        });
+
+        const downloadBtn = document.createElement("button");
+        downloadBtn.className = "secondary";
+        downloadBtn.textContent = "Download Zip";
+        downloadBtn.addEventListener("click", () => downloadZip(project));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "ghost";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => {
+          const ok = window.confirm(`Delete ${project.name || "this project"}?`);
+          if (!ok) return;
+          delete db.projects[project.id];
+          saveDb(db);
+          renderProjects();
+        });
+
+        actions.appendChild(openBtn);
+        actions.appendChild(downloadBtn);
+        actions.appendChild(deleteBtn);
+
+        card.appendChild(nameInput);
+        card.appendChild(meta);
+        card.appendChild(actions);
+        projectGrid.appendChild(card);
+      });
+    }
+
+    newProjectBtn.addEventListener("click", () => {
+      const project = createProject("Baram Live Preview");
+      db.projects[project.id] = project;
+      db.lastProjectId = project.id;
+      saveDb(db);
+      window.location.href = `index.html?id=${project.id}`;
+    });
+
+    renderProjects();
+  </script>
+</body>
+</html>

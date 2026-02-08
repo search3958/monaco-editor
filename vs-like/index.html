@@ -1,0 +1,3205 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>BaramCode</title>
+	<style>
+		/* Default Dark Theme Variables */
+		:root,
+		[data-theme="dark"] {
+			--bg-app: #1e1e1e;
+			--bg-topbar: #323233;
+			--bg-sidebar: #252526;
+			--bg-panel-header: #252526;
+			--bg-nav-rail: #333333;
+			/* Added */
+			--bg-button-default: #363636;
+			--bg-button-default-hover: #404040;
+			--bg-button-primary: #0e639c;
+			--bg-button-primary-hover: #1177bb;
+			--bg-button-secondary: #3c3c3c;
+			--bg-button-secondary-hover: #505050;
+			--bg-button-danger: #c1392b;
+			--bg-button-danger-hover: #e74c3c;
+			--bg-input: #3c3c3c;
+			--bg-tab-inactive: #2d2d2d;
+			--bg-tab-active: #1e1e1e;
+			--bg-tree-item-hover: #2a2d2e;
+			--bg-tree-item-selected: #37373d;
+			--bg-tree-item-active-file: #094771;
+			/* Added */
+			--bg-dropdown: #1b1b1b73;
+			--bg-progress-content: #252526;
+			--bg-search-result-item: #2d2d2d;
+			--bg-search-result-item-hover: #37373d;
+			--bg-search-result-match: #4a4a0a;
+
+			--color-text-default: #cccccc;
+			--color-text-light: #858585;
+			/* for nav items, welcome subtitle etc. */
+			--color-text-white: #ffffff;
+			--color-text-inactive-tab: rgba(255, 255, 255, 0.5);
+			--color-text-inactive-tab-hover: rgba(255, 255, 255, 0.8);
+			--color-text-search-match: #ffff00;
+
+			--border-color-default: #5a5a5a;
+			--border-color-hover: #6a6a6a;
+			--border-color-primary: #0e639c;
+			--border-color-primary-hover: #1177bb;
+			/* Added */
+			--border-color-danger: #c1392b;
+			--border-color-danger-hover: #e74c3c;
+			/* Added */
+			--border-color-input-focus: #007acc;
+			--border-color-main: #1e1e1e;
+			--border-color-secondary: #252526;
+			--border-color-dropdown: #ffffff14;
+			--border-color-menu-separator: #454545;
+			--accent-color: #007acc;
+
+			--scrollbar-track-bg: #252526;
+			--scrollbar-thumb-bg: #424242;
+			--scrollbar-thumb-hover-bg: #4e4e4e;
+
+			--filter-icon: brightness(2);
+			/* For icons */
+		}
+
+		/* Light Theme Variables */
+		[data-theme="light"] {
+			--bg-app: #ffffff;
+			--bg-topbar: #f3f3f3;
+			--bg-sidebar: #f8f8f8;
+			--bg-panel-header: #f3f3f3;
+			--bg-nav-rail: #eeeeee;
+			/* Added light version */
+			--bg-button-default: #e0e0e0;
+			--bg-button-default-hover: #d4d4d4;
+			--bg-button-primary: #007acc;
+			--bg-button-primary-hover: #0a84d6;
+			--bg-button-secondary: #f0f0f0;
+			--bg-button-secondary-hover: #e6e6e6;
+			--bg-button-danger: #e51400;
+			/* Adjusted from dark red to a more standard light theme red */
+			--bg-button-danger-hover: #ff2d2d;
+			--bg-input: #ffffff;
+			--bg-tab-inactive: #f0f0f0;
+			--bg-tab-active: #ffffff;
+			--bg-tree-item-hover: #e8e8e8;
+			--bg-tree-item-selected: #e0e0e0;
+			--bg-tree-item-active-file: #cce8ff;
+			/* Light version of active file background */
+			--bg-dropdown: #ffffffd0;
+			/* Semi-transparent white */
+			--bg-progress-content: #f8f8f8;
+			--bg-search-result-item: #f0f0f0;
+			--bg-search-result-item-hover: #e8e8e8;
+			--bg-search-result-match: #ffff0050;
+			/* Softer yellow for light theme */
+
+			--color-text-default: #333333;
+			--color-text-light: #666666;
+			--color-text-white: #000000;
+			/* Black for text on white background */
+			--color-text-inactive-tab: rgba(0, 0, 0, 0.5);
+			--color-text-inactive-tab-hover: rgba(0, 0, 0, 0.8);
+			--color-text-search-match: #e51400;
+			/* Darker match for light theme */
+
+			--border-color-default: #cccccc;
+			--border-color-hover: #bbbbbb;
+			--border-color-primary: #007acc;
+			--border-color-primary-hover: #0a84d6;
+			/* Added */
+			--border-color-danger: #e51400;
+			--border-color-danger-hover: #ff2d2d;
+			/* Added */
+			--border-color-input-focus: #007acc;
+			--border-color-main: #e0e0e0;
+			--border-color-secondary: #e6e6e6;
+			--border-color-dropdown: #00000014;
+			--border-color-menu-separator: #cccccc;
+			--accent-color: #007acc;
+
+			--scrollbar-track-bg: #f0f0f0;
+			--scrollbar-thumb-bg: #cccccc;
+			--scrollbar-thumb-hover-bg: #bbbbbb;
+
+			--filter-icon: brightness(0);
+			/* For icons */
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body,
+		html {
+			height: 100%;
+			overflow: hidden;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe WPC', 'Segoe UI Mono', 'Cascadia Code', Consolas, 'Liberation Mono', Menlo, Monaco, 'Courier New', monospace;
+		}
+
+		/* 共通ボタンスタイル */
+		.btn,
+		.toolbar-btn,
+		.welcome-btn,
+		.search-btn,
+		.git-btn {
+			padding: 8px 16px;
+			background: var(--bg-button-default);
+			color: var(--color-text-default);
+			border: 1px solid var(--border-color-default);
+			border-radius: 8px;
+			cursor: pointer;
+			font-size: 13px;
+			font-family: inherit;
+			transition: all 0.15s ease;
+		}
+
+		.btn:hover,
+		.toolbar-btn:hover,
+		.welcome-btn:hover,
+		.search-btn:hover,
+		.git-btn:hover {
+			background: var(--bg-button-default-hover);
+			border-color: var(--border-color-hover);
+		}
+
+		.btn:active,
+		.toolbar-btn:active,
+		.welcome-btn:active,
+		.search-btn:active,
+		.git-btn:active {
+			transform: scale(0.98);
+		}
+
+		.btn.primary,
+		.search-btn,
+		.git-btn,
+		.welcome-btn {
+			background: var(--bg-button-primary);
+			border-color: var(--border-color-primary);
+			color: var(--color-text-white);
+		}
+
+		.btn.primary:hover,
+		.search-btn:hover,
+		.git-btn:hover,
+		.welcome-btn:hover {
+			background: var(--bg-button-primary-hover);
+			border-color: var(--border-color-primary-hover);
+		}
+
+		.btn.secondary,
+		.search-btn.secondary {
+			background: var(--bg-button-secondary);
+			border-color: var(--border-color-default);
+		}
+
+		.btn.secondary:hover,
+		.search-btn.secondary:hover {
+			background: var(--bg-button-secondary-hover);
+		}
+
+		.btn.danger {
+			background: var(--bg-button-danger);
+			border-color: var(--border-color-danger);
+			color: var(--color-text-white);
+		}
+
+		.btn.danger:hover {
+			background: var(--bg-button-danger-hover);
+			border-color: var(--border-color-danger-hover);
+		}
+
+		/* 共通入力スタイル */
+		.input,
+		.search-input,
+		.git-input {
+			width: 100%;
+			padding: 8px 12px;
+			background: var(--bg-input);
+			border: 1px solid var(--border-color-default);
+			color: var(--color-text-default);
+			font-size: 13px;
+			border-radius: 6px;
+			font-family: inherit;
+			transition: border-color 0.15s ease;
+		}
+
+		.input:focus,
+		.search-input:focus,
+		.git-input:focus {
+			outline: none;
+			border-color: var(--border-color-input-focus);
+		}
+
+		/* メインレイアウト */
+		#app {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			background: var(--bg-app);
+		}
+
+		/* トップバー */
+		#topbar {
+			height: 35px;
+			background: var(--bg-topbar);
+			color: var(--color-text-default);
+			display: flex;
+			align-items: center;
+			padding: 0 15px;
+			gap: 10px;
+			border-bottom: 1px solid var(--border-color-secondary);
+			flex-shrink: 0;
+			position: relative;
+			z-index: 1000;
+		}
+
+		#topbar .title {
+			font-size: 13px;
+			font-weight: 400;
+		}
+
+		.menu-item {
+			padding: 0 8px;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			cursor: pointer;
+			font-size: 13px;
+			transition: background 0.1s;
+			position: relative;
+		}
+
+		.menu-item:hover {
+			background: rgba(255, 255, 255, 0.1);
+		}
+
+		/* ドロップダウンメニュー */
+		.dropdown-menu {
+			display: none;
+			position: absolute;
+			top: 127%;
+			left: 0;
+			background: var(--bg-dropdown);
+			border: 1px solid var(--border-color-dropdown);
+			border-radius: 24px;
+			min-width: 220px;
+			box-shadow: 0px 16px 50px rgba(0, 0, 0, 0.2);
+			padding: 4px 4px;
+			z-index: 2000;
+			corner-shape: superellipse(1.6);
+			backdrop-filter: blur(8px);
+		}
+
+		.dropdown-menu.show {
+			display: block;
+		}
+
+		.menu-item-option {
+			padding: 8px;
+			color: var(--color-text-default);
+			cursor: pointer;
+			font-size: 13px;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			transition: background 0.1s;
+			corner-shape: superellipse(1.6);
+			border-radius: 18px;
+		}
+
+		.menu-item-option:hover {
+			background: rgba(255, 255, 255, 0.1);
+			backdrop-filter: brightness(2);
+		}
+
+		.menu-item-option .icon {
+			width: 16px;
+			text-align: center;
+		}
+
+		.menu-separator {
+			height: 1px;
+			background: var(--border-color-menu-separator);
+			margin: 4px 0;
+		}
+
+		.spacer {
+			flex: 1;
+		}
+
+		/* メインコンテンツ */
+		#main-content {
+			display: flex;
+			flex: 1;
+			overflow: hidden;
+		}
+
+		/* ナビゲーションレール（左端） */
+		#nav-rail {
+			width: 48px;
+			background: var(--bg-nav-rail);
+			display: flex;
+			flex-direction: column;
+			border-right: 1px solid var(--border-color-secondary);
+			flex-shrink: 0;
+		}
+
+		.nav-item {
+			width: 48px;
+			height: 48px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			color: var(--color-text-light);
+			font-size: 24px;
+			position: relative;
+			transition: color 0.1s;
+		}
+
+		.nav-item:hover {
+			color: var(--color-text-default);
+		}
+
+		.nav-item.active {
+			color: var(--color-text-white);
+		}
+
+		.nav-item.active::before {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 8px;
+			bottom: 8px;
+			width: 2px;
+			background: var(--accent-color);
+		}
+
+		.nav-item img {
+			filter: var(--filter-icon);
+		}
+
+		/* サイドバー */
+		#sidebar {
+			width: 280px;
+			background: var(--bg-sidebar);
+			border-right: 1px solid var(--border-color-main);
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			transition: width 0.2s, margin-left 0.2s;
+		}
+
+		#sidebar.collapsed {
+			width: 0;
+			margin-left: -280px;
+		}
+
+		.sidebar-header {
+			padding: 12px 20px;
+			background: var(--bg-panel-header);
+			color: var(--color-text-default);
+			font-size: 11px;
+			text-transform: uppercase;
+			font-weight: 600;
+			letter-spacing: 0.5px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-bottom: 1px solid var(--border-color-main);
+		}
+
+		.sidebar-content {
+			flex: 1;
+			overflow-y: auto;
+			overflow-x: hidden;
+		}
+
+		.sidebar-content::-webkit-scrollbar {
+			width: 10px;
+		}
+
+		.sidebar-content::-webkit-scrollbar-track {
+			background: var(--scrollbar-track-bg);
+		}
+
+		.sidebar-content::-webkit-scrollbar-thumb {
+			background: var(--scrollbar-thumb-bg);
+			border-radius: 5px;
+		}
+
+		.sidebar-content::-webkit-scrollbar-thumb:hover {
+			background: var(--scrollbar-thumb-hover-bg);
+		}
+
+		/* ファイルツリー */
+		.tree-item {
+			display: flex;
+			align-items: center;
+			padding: 4px 8px;
+			cursor: pointer;
+			color: var(--color-text-default);
+			font-size: 13px;
+			user-select: none;
+			white-space: nowrap;
+		}
+
+		.tree-item:hover {
+			background: var(--bg-tree-item-hover);
+		}
+
+		.tree-item.selected {
+			background: var(--bg-tree-item-selected);
+			color: var(--color-text-white);
+		}
+
+		.tree-item.active-file {
+			background: var(--bg-tree-item-active-file);
+			color: var(--color-text-white);
+		}
+
+		.tree-indent {
+			display: inline-block;
+		}
+
+		.tree-arrow {
+			width: 16px;
+			height: 16px;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			margin-right: 2px;
+			font-size: 10px;
+			color: var(--color-text-light);
+			transition: transform 0.1s;
+		}
+
+		.tree-arrow.expanded {
+			transform: rotate(90deg);
+		}
+
+		.tree-arrow.empty {
+			visibility: hidden;
+		}
+
+		.tree-icon {
+			width: 16px;
+			height: 16px;
+			margin-right: 6px;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.tree-label {
+			flex: 1;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.tree-item.modified .tree-label::after {
+			content: ' ●';
+			color: var(--accent-color);
+			margin-left: 4px;
+		}
+
+		/* エディタエリア */
+		#editor-area {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			background: var(--bg-app);
+		}
+
+		/* タブバー */
+		#tab-bar {
+			display: flex;
+			background: var(--bg-sidebar);
+			/* Use sidebar background */
+			border-bottom: 1px solid var(--border-color-main);
+			overflow-x: auto;
+			overflow-y: hidden;
+			height: 35px;
+			align-items: stretch;
+		}
+
+		#tab-bar::-webkit-scrollbar {
+			height: 0;
+		}
+
+		.tab {
+			padding: 0 12px;
+			background: var(--bg-tab-inactive);
+			color: var(--color-text-inactive-tab);
+			cursor: pointer;
+			border-right: 1px solid var(--border-color-secondary);
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			font-size: 13px;
+			white-space: nowrap;
+			min-width: 100px;
+			max-width: 200px;
+			position: relative;
+		}
+
+		.tab:hover {
+			color: var(--color-text-inactive-tab-hover);
+		}
+
+		.tab.active {
+			background: var(--bg-tab-active);
+			color: var(--color-text-white);
+			border-top: 1px solid var(--accent-color);
+		}
+
+		.tab-icon {
+			font-size: 16px;
+		}
+
+		.tab-label {
+			flex: 1;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.tab-close {
+			width: 20px;
+			height: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			opacity: 0;
+			border-radius: 3px;
+			font-size: 16px;
+		}
+
+		.tab:hover .tab-close {
+			opacity: 0.6;
+		}
+
+		.tab-close:hover {
+			background: rgba(255, 255, 255, 0.15);
+			/* Keep generic for now */
+			opacity: 1 !important;
+		}
+
+		.tab.modified .tab-close::before {
+			content: '●';
+			font-size: 18px;
+			color: var(--accent-color);
+		}
+
+		.tab.modified:hover .tab-close::before {
+			content: '×';
+			color: inherit;
+		}
+
+		/* エディタコンテナ */
+		#editor-container {
+			flex: 1;
+			position: relative;
+			background: var(--bg-app);
+		}
+
+		.editor-wrapper {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			display: none;
+		}
+
+		.editor-wrapper.active {
+			display: block;
+		}
+
+		/* バイナリファイル警告 */
+		.binary-warning {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			color: var(--color-text-default);
+			text-align: center;
+			padding: 40px;
+		}
+
+		.binary-warning-icon {
+			font-size: 64px;
+			margin-bottom: 20px;
+		}
+
+		.binary-warning-title {
+			font-size: 18px;
+			font-weight: 500;
+			margin-bottom: 10px;
+		}
+
+		.binary-warning-message {
+			font-size: 14px;
+			color: var(--color-text-light);
+			margin-bottom: 20px;
+		}
+
+		/* 検索パネル */
+		#search-panel {
+			display: none;
+			flex-direction: column;
+		}
+
+		#search-panel.active {
+			display: flex;
+		}
+
+		.search-container {
+			padding: 15px 20px;
+		}
+
+		.search-input-group {
+			margin-bottom: 12px;
+		}
+
+		.search-input-wrapper {
+			position: relative;
+			margin-bottom: 8px;
+		}
+
+		.search-input-icon {
+			position: absolute;
+			right: 8px;
+			top: 50%;
+			transform: translateY(-50%);
+			color: var(--color-text-light);
+			font-size: 14px;
+		}
+
+		.search-options {
+			display: flex;
+			gap: 4px;
+			margin-top: 8px;
+		}
+
+		.search-option {
+			width: 28px;
+			height: 28px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: var(--bg-button-secondary);
+			border: 1px solid var(--border-color-default);
+			border-radius: 6px;
+			cursor: pointer;
+			color: var(--color-text-light);
+			font-size: 14px;
+			font-weight: 600;
+			transition: all 0.15s ease;
+		}
+
+		.search-option:hover {
+			background: var(--bg-button-secondary-hover);
+		}
+
+		.search-option.active {
+			background: var(--bg-tree-item-active-file);
+			border-color: var(--accent-color);
+			color: var(--color-text-white);
+		}
+
+		.search-actions {
+			display: flex;
+			gap: 8px;
+			margin-top: 12px;
+		}
+
+		.search-results {
+			flex: 1;
+			overflow-y: auto;
+			padding: 0 20px 20px;
+		}
+
+		.search-result-item {
+			padding: 8px 12px;
+			margin-bottom: 4px;
+			background: var(--bg-search-result-item);
+			border-radius: 6px;
+			cursor: pointer;
+			transition: background 0.15s ease;
+		}
+
+		.search-result-item:hover {
+			background: var(--bg-search-result-item-hover);
+		}
+
+		.search-result-file {
+			font-size: 13px;
+			color: var(--color-text-default);
+			margin-bottom: 4px;
+			font-weight: 500;
+		}
+
+		.search-result-line {
+			font-size: 12px;
+			color: var(--color-text-light);
+			font-family: 'Courier New', monospace;
+		}
+
+		.search-result-match {
+			background: var(--bg-search-result-match);
+			color: var(--color-text-search-match);
+			padding: 0 2px;
+		}
+
+		/* Gitパネル */
+		#git-panel {
+			display: none;
+			flex-direction: column;
+		}
+
+		#git-panel.active {
+			display: flex;
+		}
+
+		.git-container {
+			padding: 15px 20px;
+		}
+
+		.git-section {
+			margin-bottom: 20px;
+		}
+
+		.git-section-title {
+			font-size: 11px;
+			color: var(--color-text-light);
+			text-transform: uppercase;
+			margin-bottom: 8px;
+			letter-spacing: 0.5px;
+		}
+
+		.git-input {
+			margin-bottom: 8px;
+		}
+
+		.git-btn {
+			width: 100%;
+			margin-bottom: 6px;
+		}
+
+		.git-status {
+			padding: 12px;
+			background: var(--bg-app);
+			border-left: 3px solid var(--accent-color);
+			border-radius: 6px;
+			font-size: 12px;
+			color: var(--color-text-default);
+			margin-top: 10px;
+			display: none;
+		}
+
+		.git-status.show {
+			display: block;
+		}
+
+		.git-status.error {
+			border-left-color: var(--bg-button-danger);
+		}
+
+		.git-status.success {
+			border-left-color: var(--success-color);
+		}
+
+		.repo-list {
+			flex: 1;
+			overflow-y: auto;
+			padding: 0 20px 20px;
+		}
+
+		.repo-item {
+			padding: 12px;
+			margin-bottom: 6px;
+			background: var(--bg-search-result-item);
+			border-radius: 8px;
+			cursor: pointer;
+			transition: all 0.15s ease;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.repo-item:hover {
+			background: var(--bg-search-result-item-hover);
+		}
+
+		.repo-info {
+			flex: 1;
+		}
+
+		.repo-name {
+			font-size: 13px;
+			color: var(--color-text-default);
+			font-weight: 500;
+			margin-bottom: 4px;
+		}
+
+		.repo-url {
+			font-size: 11px;
+			color: var(--color-text-light);
+		}
+
+		.repo-delete {
+			padding: 6px 10px;
+			background: transparent;
+			border: 1px solid var(--border-color-default);
+			border-radius: 6px;
+			color: var(--color-text-light);
+			cursor: pointer;
+			font-size: 12px;
+			transition: all 0.15s ease;
+		}
+
+		.repo-delete:hover {
+			background: var(--bg-button-danger);
+			border-color: var(--bg-button-danger);
+			color: var(--color-text-white);
+		}
+
+		/* ツールバー */
+		.toolbar {
+			padding: 10px 20px;
+			background: var(--bg-sidebar);
+			/* Use sidebar background */
+			border-bottom: 1px solid var(--border-color-main);
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+
+		/* 通知 */
+		.notification {
+			position: fixed;
+			bottom: 20px;
+			right: 20px;
+			background: var(--success-color);
+			/* Use success color variable */
+			color: var(--color-text-white);
+			padding: 12px 20px;
+			border-radius: 8px;
+			z-index: 3000;
+			animation: slideIn 0.3s;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+			/* Keep static */
+			font-size: 13px;
+		}
+
+		@keyframes slideIn {
+			from {
+				transform: translateX(100%);
+				opacity: 0;
+			}
+
+			to {
+				transform: translateX(0);
+				opacity: 1;
+			}
+		}
+
+		/* プログレス */
+		.progress-overlay {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.8);
+			/* Keep static or define a new overlay variable */
+			z-index: 2000;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.progress-overlay.show {
+			display: flex;
+		}
+
+		.progress-content {
+			background: var(--bg-progress-content);
+			padding: 30px;
+			border-radius: 8px;
+			text-align: center;
+			color: var(--color-text-white);
+		}
+
+		.spinner {
+			border: 3px solid var(--bg-input);
+			/* Using input background for spinner inner color */
+			border-top: 3px solid var(--accent-color);
+			border-radius: 50%;
+			width: 40px;
+			height: 40px;
+			animation: spin 1s linear infinite;
+			margin: 0 auto 15px;
+		}
+
+		@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+
+		/* ウェルカム画面 */
+		.welcome-screen {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			color: var(--color-text-default);
+			text-align: center;
+			padding: 40px;
+		}
+
+		.welcome-logo {
+			font-size: 64px;
+			margin-bottom: 20px;
+		}
+
+		.welcome-title {
+			font-size: 24px;
+			font-weight: 300;
+			margin-bottom: 10px;
+		}
+
+		.welcome-subtitle {
+			font-size: 14px;
+			color: var(--color-text-light);
+			margin-bottom: 30px;
+		}
+
+		.welcome-actions {
+			display: flex;
+			gap: 12px;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+
+		.welcome-btn.secondary {
+			background: var(--bg-button-secondary);
+			border-color: var(--border-color-default);
+			color: var(--color-text-default);
+		}
+
+		.welcome-btn.secondary:hover {
+			background: var(--bg-button-secondary-hover);
+		}
+
+		.welcome-tips {
+			margin-top: 24px;
+			padding: 16px 18px;
+			border-radius: 12px;
+			border: 1px solid var(--border-color-main);
+			background: var(--bg-sidebar);
+			max-width: 520px;
+			text-align: left;
+		}
+
+		.welcome-tip-title {
+			font-size: 12px;
+			letter-spacing: 0.5px;
+			text-transform: uppercase;
+			color: var(--color-text-light);
+			margin-bottom: 8px;
+		}
+
+		.welcome-tip-list {
+			display: grid;
+			gap: 6px;
+			font-size: 13px;
+			color: var(--color-text-default);
+			line-height: 1.5;
+		}
+
+		.empty-state {
+			padding: 18px;
+			color: var(--color-text-light);
+			font-size: 12px;
+			text-align: center;
+		}
+
+		.preview-wrapper {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			background: var(--bg-app);
+		}
+
+		.preview-toolbar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 8px 12px;
+			background: var(--bg-panel-header);
+			border-bottom: 1px solid var(--border-color-main);
+		}
+
+		.preview-source {
+			font-size: 12px;
+			color: var(--color-text-light);
+		}
+
+		.preview-frame {
+			flex: 1;
+			border: none;
+			width: 100%;
+			background: #ffffff;
+		}
+
+		.preview-hint {
+			padding: 8px 12px;
+			font-size: 12px;
+			color: var(--color-text-light);
+			border-top: 1px solid var(--border-color-main);
+			background: var(--bg-panel-header);
+		}
+
+		.icon img {
+			filter: var(--filter-icon);
+			height: 16px;
+			margin-top: 2px;
+		}
+
+		/* モバイル対応 */
+		@media (max-width: 768px) {
+			#nav-rail {
+				width: 40px;
+			}
+
+			.nav-item {
+				width: 40px;
+				height: 40px;
+				font-size: 20px;
+			}
+
+			#sidebar {
+				position: absolute;
+				left: 40px;
+				top: 35px;
+				bottom: 0;
+				z-index: 100;
+				transform: translateX(-100%);
+				transition: transform 0.3s;
+			}
+
+			#sidebar.mobile-open {
+				transform: translateX(0);
+			}
+		}
+	</style>
+</head>
+
+<body>
+
+	<div id="app">
+		<!-- トップバー -->
+		<div id="topbar">
+			<span class="title">BaramCode</span>
+			<div class="menu-item" id="file-menu">
+				ファイル
+				<div class="dropdown-menu" id="file-dropdown">
+					<div class="menu-item-option" onclick="createNewFile()">
+						<span class="icon"><img src="icons/new_file.svg"></span>
+						<span>ファイルを追加...</span>
+					</div>
+					<div class="menu-item-option" onclick="createNewFolder()">
+						<span class="icon"><img src="icons/new_folder.svg"></span>
+						<span>フォルダを追加...</span>
+					</div>
+					<div class="menu-item-option" onclick="createStarterProject()">
+						<span class="icon">🌱</span>
+						<span>サンプルWebを作る</span>
+					</div>
+					<div class="menu-separator"></div>
+					<div class="menu-item-option" onclick="importFiles()">
+						<span class="icon"><img src="icons/open_file.svg"></span>
+						<span>ファイルを読み込む...</span>
+					</div>
+					<div class="menu-item-option" onclick="importFolder()">
+						<span class="icon"><img src="icons/open_folder.svg"></span>
+						<span>フォルダを読み込む...</span>
+					</div>
+					<div class="menu-item-option" onclick="switchWorkspaceFolder()">
+						<span class="icon">🔄</span>
+						<span>フォルダを切り替える...</span>
+					</div>
+					<div class="menu-item-option" onclick="resetWorkspace()">
+						<span class="icon">🧹</span>
+						<span>作業をリセット</span>
+					</div>
+					<div class="menu-separator"></div>
+					<div class="menu-item-option" onclick="showGitClone()">
+						<span class="icon"><img src="icons/clone_from_github.svg"></span>
+						<span>GitHubからクローン...</span>
+					</div>
+					<div class="menu-separator"></div>
+					<div class="menu-item-option" onclick="saveCurrentFile()">
+						<span class="icon"><img src="icons/save.svg"></span>
+						<span>保存</span>
+					</div>
+					<div class="menu-item-option" onclick="saveAllFiles()">
+						<span class="icon"><img src="icons/save_all.svg"></span>
+						<span>すべて保存</span>
+					</div>
+				</div>
+			</div>
+			<div class="menu-item" id="edit-menu">
+				編集
+				<div class="dropdown-menu" id="edit-dropdown">
+					<div class="menu-item-option" onclick="formatCode()">
+						<span class="icon"><img src="icons/format_document.svg"></span>
+						<span>ドキュメントを整形</span>
+					</div>
+					<div class="menu-separator"></div>
+					<div class="menu-item-option" onclick="switchPanel('search')">
+						<span class="icon"><img src="icons/find.svg"></span>
+						<span>検索...</span>
+					</div>
+					<div class="menu-item-option" onclick="switchPanel('search')">
+						<span class="icon"><img src="icons/replace.svg"></span>
+						<span>置換...</span>
+					</div>
+				</div>
+			</div>
+			<div class="menu-item" id="view-menu">
+				表示
+				<div class="dropdown-menu" id="view-dropdown">
+					<div class="menu-item-option" onclick="openPreviewTab()">
+						<span class="icon">🌐</span>
+						<span>プレビューを開く</span>
+					</div>
+					<div class="menu-separator"></div>
+					<div class="menu-item-option" onclick="switchPanel('files')">
+						<span class="icon"><img src="icons/explorer.svg"></span>
+						<span>エクスプローラー</span>
+					</div>
+					<div class="menu-item-option" onclick="switchPanel('search')">
+						<span class="icon"><img src="icons/search.svg"></span>
+						<span>検索</span>
+					</div>
+					<div class="menu-item-option" onclick="switchPanel('git')">
+						<span class="icon"><img src="icons/source_control.svg"></span>
+						<span>ソース管理</span>
+					</div>
+				</div>
+			</div>
+			<div class="menu-item" id="theme-toggle" onclick="toggleTheme()">
+				<span class="icon">💡</span> <!-- Lightbulb icon for toggle -->
+				<span>テーマ切替</span>
+			</div>
+			<div class="spacer"></div>
+			<div class="menu-item" id="current-file-name"></div>
+		</div>
+
+		<!-- メインコンテンツ -->
+		<div id="main-content">
+			<!-- ナビゲーションレール -->
+			<div id="nav-rail">
+				<div class="nav-item active" data-panel="files" title="ファイル">
+					<img src="icons/explorer.svg">
+				</div>
+				<div class="nav-item" data-panel="search" title="検索">
+					<img src="icons/search.svg">
+				</div>
+				<div class="nav-item" data-panel="git" title="ソース管理">
+					<img src="icons/source_control.svg">
+				</div>
+			</div>
+
+			<!-- サイドバー -->
+			<div id="sidebar">
+				<!-- ファイルパネル -->
+				<div id="files-panel">
+					<div class="sidebar-header">
+						<span>エクスプローラー</span>
+						<span id="file-count">0</span>
+					</div>
+					<div class="toolbar">
+						<button class="toolbar-btn" onclick="createNewFile()" title="ファイルを追加">＋ ファイル</button>
+						<button class="toolbar-btn" onclick="createNewFolder()" title="フォルダを追加">＋ フォルダ</button>
+						<button class="toolbar-btn" onclick="openPreviewTab()" title="プレビューを開く">🌐 プレビュー</button>
+						<button class="toolbar-btn" onclick="importFiles()" title="ファイルを読み込む">📥 ファイル</button>
+						<button class="toolbar-btn" onclick="importFolder()" title="フォルダを読み込む">📥 フォルダ</button>
+						<button class="toolbar-btn" onclick="switchWorkspaceFolder()" title="フォルダを切り替える">🔄
+							フォルダ切替</button>
+					</div>
+					<div class="sidebar-content" id="file-tree"></div>
+				</div>
+
+				<!-- 検索パネル -->
+				<div id="search-panel">
+					<div class="sidebar-header">
+						<span>検索</span>
+					</div>
+					<div class="search-container">
+						<div class="search-input-group">
+							<div class="search-input-wrapper">
+								<input type="text" class="search-input" id="search-text" placeholder="検索">
+								<span class="search-input-icon">🔍</span>
+							</div>
+							<div class="search-input-wrapper">
+								<input type="text" class="search-input" id="replace-text" placeholder="置換">
+								<span class="search-input-icon">🔄</span>
+							</div>
+							<div class="search-options">
+								<div class="search-option" id="search-case" title="大文字小文字を区別">Aa</div>
+								<div class="search-option" id="search-word" title="単語単位で一致">ab</div>
+								<div class="search-option" id="search-regex" title="正規表現を使う">.*</div>
+							</div>
+						</div>
+						<div class="search-actions">
+							<button class="search-btn secondary" onclick="searchInFiles()">検索</button>
+							<button class="search-btn" onclick="replaceInFiles()">置換</button>
+						</div>
+					</div>
+					<div class="search-results" id="search-results"></div>
+				</div>
+
+				<!-- Gitパネル -->
+				<div id="git-panel">
+					<div class="sidebar-header">
+						<span>ソース管理</span>
+					</div>
+
+					<!-- Clone Repository Section (Conditionally shown) -->
+					<div id="git-clone-section" class="git-container">
+						<div class="git-section">
+							<div class="git-section-title">リポジトリをクローン</div>
+							<input type="password" class="git-input" id="github-token" placeholder="GitHubトークン（任意）">
+							<input type="text" class="git-input" id="github-repo" placeholder="リポジトリURL">
+							<input type="text" class="git-input" id="github-branch" value="main" placeholder="ブランチ">
+							<button class="git-btn" onclick="cloneRepository()">クローン</button>
+						</div>
+						<div id="git-status" class="git-status"></div>
+					</div>
+
+					<!-- Repository Actions Section (Conditionally shown) -->
+					<div id="git-repo-actions" class="git-container" style="display: none;">
+						<div class="git-section">
+							<div class="git-section-title">リポジトリ: <span id="current-repo-name"></span></div>
+							<button class="git-btn primary" onclick="commitChanges()">コミット（ローカル保存）</button>
+							<button class="git-btn" onclick="pushChanges()">プッシュ（未対応）</button>
+						</div>
+						<div class="git-section">
+							<div class="git-section-title">変更 (<span id="changed-files-count">0</span>)</div>
+							<div class="repo-list" id="changed-files-list"></div>
+						</div>
+					</div>
+
+					<div class="sidebar-header">
+						<span>クローン済みリポジトリ</span>
+					</div>
+					<div class="repo-list" id="repo-list"></div>
+				</div>
+			</div>
+
+			<!-- エディタエリア -->
+			<div id="editor-area">
+				<div id="tab-bar"></div>
+				<div id="editor-container">
+					<div class="welcome-screen" id="welcome-screen">
+						<div class="welcome-logo">📝</div>
+						<div class="welcome-title">BaramCode</div>
+						<div class="welcome-subtitle">はじめてでも迷わない、やさしいWebエディタ。</div>
+						<div class="welcome-actions">
+							<button class="welcome-btn" onclick="createStarterProject()">🚀 かんたんWebを作る</button>
+							<button class="welcome-btn" onclick="createNewFile()">＋ ファイル</button>
+							<button class="welcome-btn" onclick="createNewFolder()">＋ フォルダ</button>
+							<button class="welcome-btn secondary" onclick="importFiles()">📥 ファイル読み込み</button>
+							<button class="welcome-btn secondary" onclick="importFolder()">📥 フォルダ読み込み</button>
+							<button class="welcome-btn" onclick="openPreviewTab()">🌐 プレビュー</button>
+						</div>
+						<div class="welcome-tips">
+							<div class="welcome-tip-title">はじめてガイド</div>
+							<div class="welcome-tip-list">
+								<div>1. 「＋ ファイル」で <code>index.html</code> を作る</div>
+								<div>2. 文字を書いたら「プレビュー」で確認</div>
+								<div>3. できたら「保存」で書き出し</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- プログレス表示 -->
+	<div id="progress-overlay" class="progress-overlay">
+		<div class="progress-content">
+			<div class="spinner"></div>
+			<div id="progress-text">処理中...</div>
+		</div>
+	</div>
+
+	<script src="/node_modules/monaco-editor/min/vs/loader.js"></script>
+	<script>
+		// グローバル変数
+		let editors = new Map();
+		let files = new Map();
+		let fileTree = new Map();
+		let expandedFolders = new Set();
+		let activeFileId = null;
+		let fileIdCounter = 0;
+		let githubConfig = { token: '', repo: '', branch: 'main' };
+		let fileHandles = new Map();
+		let currentPanel = 'files';
+		let db = null;
+		let searchResultsData = [];
+		let activeRepo = null; // Added
+		let selectedFolderPath = null;
+		let activeFilePath = null;
+		const PREVIEW_TAB_ID = 'preview-tab';
+		let previewOpen = false;
+		let previewUpdateTimer = null;
+		const DEFAULT_WORKSPACE_NAME = '新しいプロジェクト';
+
+		// バイナリファイル拡張子リスト
+		const BINARY_EXTENSIONS = [
+			'png', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'webp',
+			'mp3', 'mp4', 'avi', 'mov', 'wav', 'flac',
+			'zip', 'rar', '7z', 'tar', 'gz',
+			'exe', 'dll', 'so', 'dylib',
+			'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+			'bin', 'dat', 'db'
+		];
+
+		// IndexedDB初期化
+		function initDB() {
+			return new Promise((resolve, reject) => {
+				const request = indexedDB.open('BaramCodeDB', 1);
+
+				request.onerror = () => reject(request.error);
+				request.onsuccess = () => {
+					db = request.result;
+					resolve(db);
+				};
+
+				request.onupgradeneeded = (event) => {
+					const db = event.target.result;
+					if (!db.objectStoreNames.contains('repositories')) {
+						db.createObjectStore('repositories', { keyPath: 'id', autoIncrement: true });
+					}
+				};
+			});
+		}
+
+		// リポジトリ保存
+		async function saveRepository(repoData) {
+			return new Promise((resolve, reject) => {
+				const transaction = db.transaction(['repositories'], 'readwrite');
+				const store = transaction.objectStore('repositories');
+				const request = store.add(repoData);
+
+				request.onsuccess = () => resolve(request.result);
+				request.onerror = () => reject(request.error);
+			});
+		}
+
+		// リポジトリ一覧取得
+		async function getRepositories() {
+			return new Promise((resolve, reject) => {
+				const transaction = db.transaction(['repositories'], 'readonly');
+				const store = transaction.objectStore('repositories');
+				const request = store.getAll();
+
+				request.onsuccess = () => resolve(request.result);
+				request.onerror = () => reject(request.error);
+			});
+		}
+
+		// リポジトリ削除
+		async function deleteRepository(id) {
+			return new Promise((resolve, reject) => {
+				const transaction = db.transaction(['repositories'], 'readwrite');
+				const store = transaction.objectStore('repositories');
+				const request = store.delete(id);
+
+				request.onsuccess = () => resolve();
+				request.onerror = () => reject(request.error);
+			});
+		}
+
+		// Monaco Editorの初期化
+		require.config({ paths: { 'vs': '/node_modules/monaco-editor/min/vs' } });
+
+		let currentTheme = localStorage.getItem('theme') || 'dark'; // Initialize current theme
+
+		require(['vs/editor/editor.main'], async function () {
+			// Set initial theme before app initialization
+			document.documentElement.setAttribute('data-theme', currentTheme);
+			monaco.editor.setTheme(currentTheme === 'dark' ? 'vs-dark' : 'vs');
+
+			await initDB();
+			initializeApp();
+		});
+
+		function initializeApp() {
+			setupNavigation();
+			setupKeyboardShortcuts();
+			setupMenus();
+			loadRepositories();
+			updateGitPanelDisplay(); // Added
+		}
+
+		function toggleTheme() {
+			currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+			document.documentElement.setAttribute('data-theme', currentTheme);
+			localStorage.setItem('theme', currentTheme);
+			monaco.editor.setTheme(currentTheme === 'dark' ? 'vs-dark' : 'vs');
+		}
+
+		// メニュー設定
+		function setupMenus() {
+			const menus = ['file-menu', 'edit-menu', 'view-menu'];
+
+			menus.forEach(menuId => {
+				const menu = document.getElementById(menuId);
+				const dropdown = menu.querySelector('.dropdown-menu');
+
+				menu.addEventListener('click', (e) => {
+					e.stopPropagation();
+
+					// 他のメニューを閉じる
+					document.querySelectorAll('.dropdown-menu').forEach(d => {
+						if (d !== dropdown) d.classList.remove('show');
+					});
+
+					dropdown.classList.toggle('show');
+				});
+			});
+
+			// 外側クリックでメニューを閉じる
+			document.addEventListener('click', () => {
+				document.querySelectorAll('.dropdown-menu').forEach(d => {
+					d.classList.remove('show');
+				});
+			});
+		}
+
+		// ナビゲーション設定
+		function setupNavigation() {
+			document.querySelectorAll('.nav-item').forEach(item => {
+				item.addEventListener('click', () => {
+					const panel = item.dataset.panel;
+					switchPanel(panel);
+				});
+			});
+
+			document.querySelectorAll('.search-option').forEach(option => {
+				option.addEventListener('click', () => {
+					option.classList.toggle('active');
+				});
+			});
+		}
+
+		function switchPanel(panel) {
+			currentPanel = panel;
+
+			document.querySelectorAll('.nav-item').forEach(item => {
+				item.classList.toggle('active', item.dataset.panel === panel);
+			});
+
+			document.getElementById('files-panel').style.display = panel === 'files' ? 'flex' : 'none';
+			document.getElementById('files-panel').style.flexDirection = 'column';
+			document.getElementById('search-panel').classList.toggle('active', panel === 'search');
+			document.getElementById('git-panel').classList.toggle('active', panel === 'git');
+		}
+
+		// ファイルがバイナリかチェック
+		function isBinaryFile(filename) {
+			const ext = filename.split('.').pop().toLowerCase();
+			return BINARY_EXTENSIONS.includes(ext);
+		}
+
+		function escapeForSelector(value) {
+			if (window.CSS && CSS.escape) return CSS.escape(value);
+			return value.replace(/["\\]/g, '\\$&');
+		}
+
+		function getTreeItemElement(path) {
+			if (!path) return null;
+			return document.querySelector(`.tree-item[data-path="${escapeForSelector(path)}"]`);
+		}
+
+		function getRootFolders() {
+			return Array.from(fileTree.keys()).filter(path => !path.includes('/'));
+		}
+
+		function getParentPath(path) {
+			const index = path.lastIndexOf('/');
+			if (index === -1) return '';
+			return path.slice(0, index);
+		}
+
+		function ensureWorkspaceRoot() {
+			if (fileTree.size > 0) return;
+			const rootPath = DEFAULT_WORKSPACE_NAME;
+			fileTree.set(rootPath, {
+				name: DEFAULT_WORKSPACE_NAME,
+				type: 'folder',
+				children: [],
+				handle: null,
+				expanded: true,
+				isWorkspaceRoot: true
+			});
+			selectedFolderPath = rootPath;
+			renderFileTree();
+		}
+
+		function addChildToFolder(parentPath, childPath) {
+			if (!parentPath) return;
+			const parent = fileTree.get(parentPath);
+			if (!parent || parent.type !== 'folder') return;
+			if (!parent.children.includes(childPath)) {
+				parent.children.push(childPath);
+			}
+			parent.expanded = true;
+		}
+
+		function resolveUniqueName(parentPath, name, type = 'file', excludePath = '') {
+			let candidate = name;
+			let counter = 1;
+			while (true) {
+				const candidatePath = parentPath ? `${parentPath}/${candidate}` : candidate;
+				if (!fileTree.has(candidatePath) || candidatePath === excludePath) {
+					return candidate;
+				}
+				if (type === 'file' && name.includes('.')) {
+					const dotIndex = name.lastIndexOf('.');
+					const base = name.slice(0, dotIndex);
+					const ext = name.slice(dotIndex);
+					candidate = `${base} (${counter})${ext}`;
+				} else {
+					candidate = `${name} (${counter})`;
+				}
+				counter++;
+			}
+		}
+
+		function getTargetFolderPath() {
+			if (selectedFolderPath) {
+				const selectedItem = fileTree.get(selectedFolderPath);
+				if (selectedItem && selectedItem.type === 'folder') {
+					return selectedFolderPath;
+				}
+			}
+
+			if (activeFileId) {
+				const fileData = files.get(activeFileId);
+				if (fileData && fileData.path) {
+					const parent = getParentPath(fileData.path);
+					if (parent) return parent;
+				}
+			}
+
+			const rootFolders = getRootFolders();
+			if (rootFolders.length > 0) {
+				return rootFolders[0];
+			}
+
+			ensureWorkspaceRoot();
+			return selectedFolderPath;
+		}
+
+		function setSelectedFolder(path) {
+			if (!path || selectedFolderPath === path) return;
+			const prev = getTreeItemElement(selectedFolderPath);
+			if (prev) prev.classList.remove('selected');
+			selectedFolderPath = path;
+			const next = getTreeItemElement(path);
+			if (next) next.classList.add('selected');
+		}
+
+		function setActiveFilePath(path) {
+			if (activeFilePath === path) return;
+			const prev = getTreeItemElement(activeFilePath);
+			if (prev) prev.classList.remove('active-file');
+			activeFilePath = path;
+			const next = getTreeItemElement(activeFilePath);
+			if (next) next.classList.add('active-file');
+		}
+
+		function createVirtualFileEntry(parentPath, name, content = '', modified = true) {
+			const uniqueName = resolveUniqueName(parentPath, name, 'file');
+			const filePath = parentPath ? `${parentPath}/${uniqueName}` : uniqueName;
+			fileTree.set(filePath, {
+				name: uniqueName,
+				type: 'file',
+				handle: null,
+				parent: parentPath || null,
+				content: content,
+				modified: modified,
+				isVirtual: true
+			});
+			addChildToFolder(parentPath, filePath);
+			return { filePath, name: uniqueName };
+		}
+
+		function createVirtualFolderEntry(parentPath, name) {
+			const uniqueName = resolveUniqueName(parentPath, name, 'folder');
+			const folderPath = parentPath ? `${parentPath}/${uniqueName}` : uniqueName;
+			fileTree.set(folderPath, {
+				name: uniqueName,
+				type: 'folder',
+				children: [],
+				handle: null,
+				parent: parentPath || null,
+				expanded: true,
+				isVirtual: true
+			});
+			addChildToFolder(parentPath, folderPath);
+			return { folderPath, name: uniqueName };
+		}
+
+		function updateFileName(fileId, newName) {
+			const fileData = files.get(fileId);
+			if (!fileData || fileData.name === newName) return;
+
+			const oldPath = fileData.path;
+			fileData.name = newName;
+
+			const tabLabel = document.querySelector(`[data-file-id="${fileId}"] .tab-label`);
+			if (tabLabel) tabLabel.textContent = newName;
+			if (activeFileId === fileId) {
+				document.getElementById('current-file-name').textContent = newName;
+			}
+
+			if (oldPath) {
+				const parentPath = getParentPath(oldPath);
+				const newPath = parentPath ? `${parentPath}/${newName}` : newName;
+				const treeItem = fileTree.get(oldPath);
+				if (treeItem) {
+					fileTree.delete(oldPath);
+					treeItem.name = newName;
+					treeItem.parent = parentPath || null;
+					fileTree.set(newPath, treeItem);
+
+					const parentItem = fileTree.get(parentPath);
+					if (parentItem && parentItem.children) {
+						const index = parentItem.children.indexOf(oldPath);
+						if (index >= 0) parentItem.children[index] = newPath;
+					}
+				}
+				fileData.path = newPath;
+				activeFilePath = newPath;
+				renderFileTree();
+			}
+		}
+
+		function buildPreviewHtml() {
+			const openFiles = Array.from(files.values()).filter(file => !file.binary);
+			if (openFiles.length === 0) {
+				const emptyHtml = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>プレビュー</title>
+</head>
+<body style="font-family: sans-serif; padding: 24px;">
+	<h2>プレビューに表示するHTMLがありません</h2>
+	<p>まずは <strong>index.html</strong> などのHTMLファイルを作成してください。</p>
+</body>
+</html>`;
+				return { html: emptyHtml, label: 'プレビュー: HTMLがありません' };
+			}
+
+			const isHtml = (name) => {
+				const ext = name.split('.').pop().toLowerCase();
+				return ext === 'html' || ext === 'htm';
+			};
+			const isCss = (name) => name.split('.').pop().toLowerCase() === 'css';
+			const isJs = (name) => name.split('.').pop().toLowerCase() === 'js';
+
+			let htmlFile = null;
+			if (activeFileId) {
+				const active = files.get(activeFileId);
+				if (active && isHtml(active.name)) {
+					htmlFile = active;
+				}
+			}
+			if (!htmlFile) {
+				htmlFile = openFiles.find(file => file.name.toLowerCase() === 'index.html') ||
+					openFiles.find(file => isHtml(file.name));
+			}
+
+			const baseHtml = htmlFile ? htmlFile.content : '';
+			const cssFiles = openFiles.filter(file => isCss(file.name));
+			const jsFiles = openFiles.filter(file => isJs(file.name));
+			const containsName = (html, filename) => {
+				const escaped = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+				return new RegExp(escaped, 'i').test(html);
+			};
+
+			const cssContent = cssFiles
+				.filter(file => !containsName(baseHtml, file.name))
+				.map(file => `/* ${file.name} */\n${file.content}`)
+				.join('\n\n');
+			const jsContent = jsFiles
+				.filter(file => !containsName(baseHtml, file.name))
+				.map(file => `// ${file.name}\n${file.content}`)
+				.join('\n\n');
+
+			let html = baseHtml || `<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>プレビュー</title>
+</head>
+<body>
+	<h2>HTMLファイルを作成してください</h2>
+</body>
+</html>`;
+
+			if (cssContent) {
+				const styleTag = `<style data-baram-inline>\n${cssContent}\n</style>`;
+				if (html.match(/<\/head>/i)) {
+					html = html.replace(/<\/head>/i, `${styleTag}\n</head>`);
+				} else {
+					html = `${styleTag}\n${html}`;
+				}
+			}
+
+			if (jsContent) {
+				const scriptTag = `<script data-baram-inline>\n${jsContent}\n</script>`;
+	if (html.match(/<\ /body>/i)) {
+		html = html.replace(/<\ /body>/i, `${scriptTag}\n
+</body>`);
+} else {
+html = `${html}\n${scriptTag}`;
+}
+}
+
+return { html, label: `プレビュー: ${htmlFile ? htmlFile.name : 'HTMLなし'}` };
+}
+
+function schedulePreviewUpdate() {
+if (!previewOpen) return;
+clearTimeout(previewUpdateTimer);
+previewUpdateTimer = setTimeout(() => {
+updatePreview();
+}, 150);
+}
+
+function updatePreview() {
+if (!previewOpen) return;
+const frame = document.getElementById('preview-frame');
+const label = document.getElementById('preview-source-label');
+if (!frame) return;
+const preview = buildPreviewHtml();
+frame.srcdoc = preview.html;
+if (label) label.textContent = preview.label;
+}
+
+function openPreviewTab() {
+let tab = document.querySelector(`[data-file-id="${PREVIEW_TAB_ID}"]`);
+if (!tab) {
+const tabBar = document.getElementById('tab-bar');
+tab = document.createElement('div');
+tab.className = 'tab';
+tab.dataset.fileId = PREVIEW_TAB_ID;
+tab.innerHTML = `
+<span class="tab-icon">🌐</span>
+<span class="tab-label">プレビュー</span>
+<span class="tab-close" onclick="closeTab('${PREVIEW_TAB_ID}', event)">×</span>
+`;
+tab.addEventListener('click', (e) => {
+if (!e.target.classList.contains('tab-close')) {
+switchToTab(PREVIEW_TAB_ID);
+}
+});
+tabBar.appendChild(tab);
+
+const container = document.getElementById('editor-container');
+const wrapper = document.createElement('div');
+wrapper.className = 'editor-wrapper';
+wrapper.id = `editor-${PREVIEW_TAB_ID}`;
+wrapper.innerHTML = `
+<div class="preview-wrapper">
+	<div class="preview-toolbar">
+		<span class="preview-source" id="preview-source-label">プレビュー</span>
+		<button class="btn secondary" onclick="updatePreview()">再読み込み</button>
+	</div>
+	<iframe class="preview-frame" id="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+	<div class="preview-hint">開いているHTML/CSS/JSを自動で反映します。</div>
+</div>
+`;
+container.appendChild(wrapper);
+}
+
+previewOpen = true;
+switchToTab(PREVIEW_TAB_ID);
+updatePreview();
+hideWelcomeScreen();
+}
+
+// バイナリ警告を表示
+function showBinaryWarning(fileId, filename) {
+const container = document.getElementById('editor-container');
+const wrapper = document.createElement('div');
+wrapper.className = 'editor-wrapper';
+wrapper.id = `editor-${fileId}`;
+wrapper.innerHTML = `
+<div class="binary-warning">
+	<div class="binary-warning-icon">⚠️</div>
+	<div class="binary-warning-title">バイナリファイルを検出しました</div>
+	<div class="binary-warning-message">
+		"${filename}" はバイナリファイルのため、テキストとして表示できません。
+	</div>
+</div>
+`;
+container.appendChild(wrapper);
+}
+
+// ファイル読み込み
+async function importFiles() {
+try {
+const handles = await window.showOpenFilePicker({ multiple: true });
+
+if (!handles || handles.length === 0) return;
+
+ensureWorkspaceRoot();
+const parentPath = getTargetFolderPath();
+let firstFilePath = null;
+
+for (const handle of handles) {
+const file = await handle.getFile();
+const uniqueName = resolveUniqueName(parentPath, file.name, 'file');
+const filePath = parentPath ? `${parentPath}/${uniqueName}` : uniqueName;
+
+fileTree.set(filePath, {
+name: uniqueName,
+type: 'file',
+handle: handle,
+parent: parentPath || null,
+modified: false
+});
+addChildToFolder(parentPath, filePath);
+if (!firstFilePath) firstFilePath = filePath;
+}
+
+renderFileTree();
+setSelectedFolder(parentPath);
+hideWelcomeScreen();
+
+if (handles.length === 1 && !activeFileId && firstFilePath) {
+await openTreeFile(firstFilePath);
+}
+
+showNotification(`${handles.length}件のファイルを追加しました`);
+} catch (err) {
+if (err.name !== 'AbortError') {
+showNotification('ファイルを読み込めませんでした: ' + err.message, 'error');
+}
+}
+}
+
+// フォルダ読み込み
+async function importFolder() {
+try {
+const dirHandle = await window.showDirectoryPicker();
+if (!dirHandle) return;
+const resetOk = resetWorkspace({ showToast: false });
+if (!resetOk) return;
+await loadDirectory(dirHandle);
+activeRepo = null;
+updateGitPanelDisplay();
+hideWelcomeScreen();
+showNotification('フォルダを読み込みました');
+} catch (err) {
+if (err.name !== 'AbortError') {
+showNotification('フォルダを読み込めませんでした: ' + err.message, 'error');
+}
+}
+}
+
+// ディレクトリ読み込み
+async function loadDirectory(dirHandle, parentPath = '') {
+const path = parentPath ? `${parentPath}/${dirHandle.name}` : dirHandle.name;
+
+fileTree.set(path, {
+name: dirHandle.name,
+type: 'folder',
+children: [],
+handle: dirHandle,
+expanded: parentPath ? false : true,
+parent: parentPath || null
+});
+
+if (parentPath) {
+addChildToFolder(parentPath, path);
+}
+
+for await (const entry of dirHandle.values()) {
+const entryPath = `${path}/${entry.name}`;
+
+if (entry.kind === 'file') {
+fileTree.set(entryPath, {
+name: entry.name,
+type: 'file',
+handle: entry,
+parent: path
+});
+addChildToFolder(path, entryPath);
+} else if (entry.kind === 'directory') {
+await loadDirectory(entry, path);
+}
+}
+
+renderFileTree();
+}
+
+// ファイルツリー描画
+function renderFileTree() {
+const container = document.getElementById('file-tree');
+container.innerHTML = '';
+
+const rootFolders = getRootFolders();
+
+if (rootFolders.length === 0) {
+container.innerHTML = '<div class="empty-state">まだファイルがありません。上の「＋ ファイル」から始めましょう。</div>';
+updateFileCount();
+return;
+}
+
+if (selectedFolderPath && !fileTree.has(selectedFolderPath)) {
+selectedFolderPath = null;
+}
+
+if (!selectedFolderPath) {
+selectedFolderPath = rootFolders[0];
+}
+
+rootFolders.forEach(path => {
+renderTreeItem(path, 0, container);
+});
+
+updateFileCount();
+}
+
+function renderTreeItem(path, level, container) {
+const item = fileTree.get(path);
+if (!item) return;
+
+const div = document.createElement('div');
+div.className = 'tree-item';
+div.dataset.path = path;
+div.classList.toggle('selected', path === selectedFolderPath);
+div.classList.toggle('active-file', path === activeFilePath);
+div.classList.toggle('modified', item.modified);
+
+const indent = document.createElement('span');
+indent.className = 'tree-indent';
+indent.style.width = `${level * 16}px`;
+div.appendChild(indent);
+
+if (item.type === 'folder') {
+const arrow = document.createElement('span');
+arrow.className = item.children.length > 0 ? 'tree-arrow' : 'tree-arrow empty';
+arrow.textContent = '▶';
+if (item.expanded) arrow.classList.add('expanded');
+div.appendChild(arrow);
+
+arrow.addEventListener('click', (e) => {
+e.stopPropagation();
+item.expanded = !item.expanded;
+renderFileTree();
+});
+} else {
+const arrow = document.createElement('span');
+arrow.className = 'tree-arrow empty';
+div.appendChild(arrow);
+}
+
+const icon = document.createElement('span');
+icon.className = 'tree-icon';
+icon.textContent = item.type === 'folder' ? '📁' : '📄';
+div.appendChild(icon);
+
+const label = document.createElement('span');
+label.className = 'tree-label';
+label.textContent = item.name;
+div.appendChild(label);
+
+div.addEventListener('click', async () => {
+if (item.type === 'folder') {
+setSelectedFolder(path);
+if (item.children && item.children.length > 0) {
+item.expanded = !item.expanded;
+renderFileTree();
+}
+} else {
+setSelectedFolder(item.parent || getParentPath(path));
+await openTreeFile(path);
+}
+});
+
+container.appendChild(div);
+
+if (item.type === 'folder' && item.expanded && item.children) {
+item.children.forEach(childPath => {
+renderTreeItem(childPath, level + 1, container);
+});
+}
+}
+
+// ツリーからファイルを開く（選択したもののみ）
+async function openTreeFile(path) {
+const item = fileTree.get(path);
+if (!item || item.type !== 'file') return;
+
+// 既に開いているかチェック
+for (const [fileId, fileData] of files.entries()) {
+if (fileData.path === path) {
+switchToTab(fileId);
+return;
+}
+}
+
+try {
+let fileContent = '';
+let fileName = item.name;
+let fileHandle = null;
+let isBinary = false;
+let isVirtual = false;
+
+if (item.handle) { // Local file from File System Access API
+const file = await item.handle.getFile();
+fileContent = await file.text();
+fileName = file.name;
+fileHandle = item.handle;
+isBinary = isBinaryFile(file.name);
+// For local files, original content is the same as current content initially
+item.originalContent = fileContent;
+} else if (item.repoFile && item.repo) { // File from cloned GitHub repository
+showProgress(`GitHubから ${item.repoFile.path} を取得中...`);
+const headers = {
+'Accept': 'application/vnd.github.v3.raw', // Request raw content
+};
+// Add token if available
+const githubToken = localStorage.getItem('githubToken'); // Assuming token is stored in localStorage
+if (githubToken) {
+headers['Authorization'] = `token ${githubToken}`;
+}
+const response = await fetch(item.repoFile.url, { headers });
+if (!response.ok) {
+throw new Error(`GitHubからの取得に失敗しました: ${response.statusText}`);
+}
+fileContent = await response.text();
+fileName = item.name;
+// No FileSystemFileHandle for repo files, so fileHandle remains null
+isBinary = isBinaryFile(item.name); // Check binary for repo files too
+item.originalContent = fileContent; // Store original content fetched from GitHub
+hideProgress();
+} else if (typeof item.content === 'string') { // Virtual file in workspace
+fileContent = item.content;
+fileName = item.name;
+fileHandle = null;
+isBinary = isBinaryFile(item.name);
+isVirtual = true;
+item.originalContent = item.originalContent ?? item.content;
+} else {
+throw new Error('ファイル情報が見つかりませんでした。');
+}
+
+const fileId = `file-${fileIdCounter++}`;
+fileHandles.set(fileId, fileHandle); // fileHandle will be null for repo files
+
+const modifiedState = isVirtual ? (item.modified ?? true) : false;
+
+if (isBinary) {
+files.set(fileId, {
+name: fileName,
+content: '', // Binary files don't show content
+modified: modifiedState,
+binary: true,
+handle: fileHandle,
+path: path,
+repoFile: item.repoFile, // Keep repo info
+repo: item.repo,
+originalContent: item.originalContent // Also store original content for binary
+});
+createTab(fileId, fileName);
+showBinaryWarning(fileId, fileName);
+} else {
+files.set(fileId, {
+name: fileName,
+content: fileContent,
+modified: modifiedState,
+binary: false,
+handle: fileHandle,
+path: path,
+repoFile: item.repoFile, // Keep repo info
+repo: item.repo,
+originalContent: item.originalContent // Store original content
+});
+createTab(fileId, fileName);
+createEditor(fileId, fileContent, fileName);
+}
+updateTabModifiedState(fileId);
+
+hideWelcomeScreen();
+if (previewOpen) {
+updatePreview();
+}
+} catch (err) {
+hideProgress();
+showNotification('ファイルを開けませんでした: ' + err.message, 'error');
+}
+}
+
+// タブ作成
+function createTab(fileId, filename) {
+const tabBar = document.getElementById('tab-bar');
+const tab = document.createElement('div');
+tab.className = 'tab';
+tab.dataset.fileId = fileId;
+
+tab.innerHTML = `
+<span class="tab-icon">📄</span>
+<span class="tab-label">${filename}</span>
+<span class="tab-close" onclick="closeTab('${fileId}', event)">×</span>
+`;
+
+tab.addEventListener('click', (e) => {
+if (!e.target.classList.contains('tab-close')) {
+switchToTab(fileId);
+}
+});
+
+tabBar.appendChild(tab);
+switchToTab(fileId);
+}
+
+// タブ切り替え
+function switchToTab(fileId) {
+activeFileId = fileId;
+
+document.querySelectorAll('.tab').forEach(t => {
+t.classList.toggle('active', t.dataset.fileId === fileId);
+});
+
+document.querySelectorAll('.editor-wrapper').forEach(w => {
+w.classList.toggle('active', w.id === `editor-${fileId}`);
+if (w.classList.contains('active')) {
+const editor = editors.get(fileId);
+if (editor) {
+// Add a small delay to allow the browser to fully render the wrapper
+// and calculate its dimensions before Monaco tries to lay itself out.
+setTimeout(() => {
+editor.layout();
+}, 0);
+}
+}
+});
+
+const fileData = files.get(fileId);
+if (fileId === PREVIEW_TAB_ID) {
+document.getElementById('current-file-name').textContent = 'プレビュー';
+setActiveFilePath(null);
+updatePreview();
+} else if (fileData) {
+document.getElementById('current-file-name').textContent = fileData.name;
+setActiveFilePath(fileData.path);
+} else {
+document.getElementById('current-file-name').textContent = '';
+setActiveFilePath(null);
+}
+}
+
+// エディタ作成
+function createEditor(fileId, content, filename) {
+const container = document.getElementById('editor-container');
+const wrapper = document.createElement('div');
+wrapper.className = 'editor-wrapper';
+wrapper.id = `editor-${fileId}`;
+container.appendChild(wrapper);
+
+const editor = monaco.editor.create(wrapper, {
+value: content,
+language: getLanguageFromFilename(filename),
+theme: 'vs-dark',
+automaticLayout: true,
+fontSize: 14,
+minimap: { enabled: true },
+scrollBeyondLastLine: false
+});
+
+editor.onDidChangeModelContent(() => {
+const fileData = files.get(fileId);
+if (fileData && !fileData.binary) {
+const newValue = editor.getValue();
+fileData.content = newValue;
+fileData.modified = true;
+updateTabModifiedState(fileId);
+
+if (fileData.path) {
+const treeItem = fileTree.get(fileData.path);
+if (treeItem && !treeItem.handle && !treeItem.repoFile) {
+treeItem.content = newValue;
+}
+}
+
+schedulePreviewUpdate();
+}
+});
+
+editors.set(fileId, editor);
+}
+
+// ファイル名から言語を推定
+function getLanguageFromFilename(filename) {
+const ext = filename.split('.').pop().toLowerCase();
+const languageMap = {
+'js': 'javascript',
+'ts': 'typescript',
+'jsx': 'javascript',
+'tsx': 'typescript',
+'json': 'json',
+'html': 'html',
+'css': 'css',
+'scss': 'scss',
+'py': 'python',
+'java': 'java',
+'cpp': 'cpp',
+'c': 'c',
+'cs': 'csharp',
+'php': 'php',
+'rb': 'ruby',
+'go': 'go',
+'rs': 'rust',
+'sql': 'sql',
+'md': 'markdown',
+'xml': 'xml',
+'yaml': 'yaml',
+'yml': 'yaml'
+};
+return languageMap[ext] || 'plaintext';
+}
+
+// タブの修正状態を更新
+function updateTabModifiedState(fileId) {
+const tab = document.querySelector(`[data-file-id="${fileId}"]`);
+const fileData = files.get(fileId);
+if (tab && fileData) {
+tab.classList.toggle('modified', fileData.modified);
+if (fileData.repo && fileData.repo.id === activeRepo?.id) { // If part of active repo, update git panel
+trackModifiedFiles();
+}
+}
+
+if (fileData && fileData.path) {
+const treeItem = fileTree.get(fileData.path);
+if (treeItem) {
+treeItem.modified = fileData.modified;
+}
+const treeElement = getTreeItemElement(fileData.path);
+if (treeElement) {
+treeElement.classList.toggle('modified', fileData.modified);
+}
+}
+}
+
+// タブを閉じる
+function closeTab(fileId, event) {
+event?.stopPropagation();
+
+if (fileId === PREVIEW_TAB_ID) {
+const previewTab = document.querySelector(`[data-file-id="${PREVIEW_TAB_ID}"]`);
+const previewWrapper = document.getElementById(`editor-${PREVIEW_TAB_ID}`);
+if (previewTab) previewTab.remove();
+if (previewWrapper) previewWrapper.remove();
+previewOpen = false;
+clearTimeout(previewUpdateTimer);
+
+const remainingTabs = document.querySelectorAll('.tab');
+if (remainingTabs.length > 0) {
+const nextFileId = remainingTabs[0].dataset.fileId;
+switchToTab(nextFileId);
+} else {
+activeFileId = null;
+document.getElementById('current-file-name').textContent = '';
+showWelcomeScreen();
+}
+return;
+}
+
+const fileData = files.get(fileId);
+if (fileData && fileData.modified) {
+if (!confirm(`未保存の変更があります。「${fileData.name}」を閉じてもよいですか？`)) {
+return;
+}
+}
+
+const tab = document.querySelector(`[data-file-id="${fileId}"]`);
+const wrapper = document.getElementById(`editor-${fileId}`);
+
+if (tab) tab.remove();
+if (wrapper) wrapper.remove();
+
+const editor = editors.get(fileId);
+if (editor) {
+editor.dispose();
+editors.delete(fileId);
+}
+
+files.delete(fileId);
+fileHandles.delete(fileId);
+
+const remainingTabs = document.querySelectorAll('.tab');
+if (remainingTabs.length > 0) {
+const nextFileId = remainingTabs[0].dataset.fileId;
+switchToTab(nextFileId);
+} else {
+activeFileId = null;
+document.getElementById('current-file-name').textContent = '';
+showWelcomeScreen();
+}
+}
+
+// ウェルカム画面制御
+function hideWelcomeScreen() {
+document.getElementById('welcome-screen').style.display = 'none';
+}
+
+function showWelcomeScreen() {
+document.getElementById('welcome-screen').style.display = 'flex';
+}
+
+function hasUnsavedChanges() {
+for (const fileData of files.values()) {
+if (fileData.modified) return true;
+}
+return false;
+}
+
+function resetWorkspace({ showToast = true } = {}) {
+if (hasUnsavedChanges()) {
+const confirmReset = confirm('未保存の変更があります。作業をリセットしますか？');
+if (!confirmReset) return false;
+}
+
+document.querySelectorAll('.tab').forEach(tab => tab.remove());
+document.querySelectorAll('.editor-wrapper').forEach(wrapper => wrapper.remove());
+
+editors.forEach(editor => editor.dispose());
+editors.clear();
+files.clear();
+fileHandles.clear();
+fileTree.clear();
+
+selectedFolderPath = null;
+activeFilePath = null;
+activeFileId = null;
+previewOpen = false;
+clearTimeout(previewUpdateTimer);
+
+document.getElementById('file-tree').innerHTML = '';
+updateFileCount();
+document.getElementById('current-file-name').textContent = '';
+activeRepo = null;
+updateGitPanelDisplay();
+
+showWelcomeScreen();
+
+if (showToast) {
+showNotification('作業をリセットしました');
+}
+
+return true;
+}
+
+async function switchWorkspaceFolder() {
+await importFolder();
+}
+
+// 全ファイルで検索
+async function searchInFiles() {
+const searchText = document.getElementById('search-text').value;
+if (!searchText) {
+showNotification('検索文字を入力してください', 'error');
+return;
+}
+
+const matchCase = document.getElementById('search-case').classList.contains('active');
+const useRegex = document.getElementById('search-regex').classList.contains('active');
+const resultsContainer = document.getElementById('search-results');
+
+resultsContainer.innerHTML = '';
+searchResultsData = [];
+
+showProgress('検索中...');
+
+try {
+let regex;
+if (useRegex) {
+regex = new RegExp(searchText, matchCase ? 'g' : 'gi');
+} else {
+const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+regex = new RegExp(escaped, matchCase ? 'g' : 'gi');
+}
+
+// 開いているファイルを検索
+for (const [fileId, fileData] of files.entries()) {
+if (fileData.binary) continue;
+
+const lines = fileData.content.split('\n');
+lines.forEach((line, index) => {
+if (regex.test(line)) {
+searchResultsData.push({
+fileId,
+fileName: fileData.name,
+lineNumber: index + 1,
+lineContent: line,
+searchText
+});
+}
+});
+}
+
+// ツリー内のファイルも検索
+for (const [path, item] of fileTree.entries()) {
+if (item.type === 'file' && !isBinaryFile(item.name)) {
+// 既に開いているファイルはスキップ
+let alreadyOpen = false;
+for (const fileData of files.values()) {
+if (fileData.path === path) {
+alreadyOpen = true;
+break;
+}
+}
+
+if (!alreadyOpen) {
+try {
+let content = '';
+if (item.handle) {
+const file = await item.handle.getFile();
+content = await file.text();
+} else if (typeof item.content === 'string') {
+content = item.content;
+} else {
+continue;
+}
+const lines = content.split('\n');
+
+lines.forEach((line, index) => {
+if (regex.test(line)) {
+searchResultsData.push({
+filePath: path,
+fileName: item.name,
+lineNumber: index + 1,
+lineContent: line,
+searchText
+});
+}
+});
+} catch (err) {
+console.error('Error reading file:', err);
+}
+}
+}
+}
+
+displaySearchResults();
+hideProgress();
+
+showNotification(`${searchResultsData.length}件の結果が見つかりました`);
+} catch (err) {
+hideProgress();
+showNotification('検索に失敗しました: ' + err.message, 'error');
+}
+}
+
+// 検索結果を表示
+function displaySearchResults() {
+const resultsContainer = document.getElementById('search-results');
+resultsContainer.innerHTML = '';
+
+if (searchResultsData.length === 0) {
+resultsContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #858585;">検索結果がありません</div>';
+return;
+}
+
+searchResultsData.forEach((result, index) => {
+const item = document.createElement('div');
+item.className = 'search-result-item';
+item.dataset.index = index;
+
+const matchCase = document.getElementById('search-case').classList.contains('active');
+const regex = new RegExp(
+result.searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+matchCase ? 'g' : 'gi'
+);
+
+const highlightedLine = result.lineContent.replace(regex, match =>
+`<span class="search-result-match">${match}</span>`
+);
+
+item.innerHTML = `
+<div class="search-result-file">${result.fileName} (${result.lineNumber}行目)</div>
+<div class="search-result-line">${highlightedLine}</div>
+`;
+
+item.addEventListener('click', () => openSearchResult(result));
+resultsContainer.appendChild(item);
+});
+}
+
+// 検索結果を開く
+async function openSearchResult(result) {
+if (result.fileId) {
+// 既に開いているファイル
+switchToTab(result.fileId);
+const editor = editors.get(result.fileId);
+if (editor) {
+editor.revealLineInCenter(result.lineNumber);
+editor.setPosition({ lineNumber: result.lineNumber, column: 1 });
+}
+} else if (result.filePath) {
+// ツリーからファイルを開く
+await openTreeFile(result.filePath);
+// 少し待ってからジャンプ
+setTimeout(() => {
+const editor = editors.get(activeFileId);
+if (editor) {
+editor.revealLineInCenter(result.lineNumber);
+editor.setPosition({ lineNumber: result.lineNumber, column: 1 });
+}
+}, 100);
+}
+}
+
+// ファイル内で置換
+async function replaceInFiles() {
+const searchText = document.getElementById('search-text').value;
+const replaceText = document.getElementById('replace-text').value;
+
+if (!searchText) {
+showNotification('検索文字を入力してください', 'error');
+return;
+}
+
+if (!confirm(`「${searchText}」を「${replaceText}」にすべて置き換えますか？`)) {
+return;
+}
+
+const matchCase = document.getElementById('search-case').classList.contains('active');
+const useRegex = document.getElementById('search-regex').classList.contains('active');
+
+let count = 0;
+
+try {
+let regex;
+if (useRegex) {
+regex = new RegExp(searchText, matchCase ? 'g' : 'gi');
+} else {
+const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+regex = new RegExp(escaped, matchCase ? 'g' : 'gi');
+}
+
+// 開いているファイルで置換
+for (const [fileId, fileData] of files.entries()) {
+if (fileData.binary) continue;
+
+const editor = editors.get(fileId);
+if (editor) {
+const content = editor.getValue();
+const newContent = content.replace(regex, replaceText);
+if (content !== newContent) {
+editor.setValue(newContent);
+count++;
+}
+}
+}
+
+showNotification(`${count}件のファイルを置換しました`);
+} catch (err) {
+showNotification('置換に失敗しました: ' + err.message, 'error');
+}
+}
+
+// 現在のファイルを保存
+async function saveCurrentFile() {
+if (!activeFileId) return;
+
+if (activeFileId === PREVIEW_TAB_ID) {
+showNotification('プレビューは保存不要です');
+return;
+}
+
+const fileData = files.get(activeFileId);
+if (!fileData) return;
+
+if (fileData.binary) {
+showNotification('バイナリファイルは保存できません', 'error');
+return;
+}
+
+let handle = fileHandles.get(activeFileId);
+
+if (!handle) {
+if (!window.showSaveFilePicker) {
+showNotification('このブラウザでは保存先を指定できません', 'error');
+return;
+}
+
+try {
+handle = await window.showSaveFilePicker({
+suggestedName: fileData.name
+});
+if (!handle) return;
+
+fileHandles.set(activeFileId, handle);
+fileData.handle = handle;
+
+if (fileData.path) {
+const treeItem = fileTree.get(fileData.path);
+if (treeItem) treeItem.handle = handle;
+}
+
+const parentPath = fileData.path ? getParentPath(fileData.path) : '';
+const resolvedName = resolveUniqueName(parentPath, handle.name, 'file', fileData.path || '');
+if (resolvedName !== fileData.name) {
+if (resolvedName !== handle.name) {
+showNotification('同名ファイルがあるため表示名を調整しました');
+}
+updateFileName(activeFileId, resolvedName);
+}
+} catch (err) {
+if (err.name !== 'AbortError') {
+showNotification('保存先の選択に失敗しました: ' + err.message, 'error');
+}
+return;
+}
+}
+
+try {
+const editor = editors.get(activeFileId);
+const content = editor.getValue();
+
+const writable = await handle.createWritable();
+await writable.write(content);
+await writable.close();
+
+fileData.modified = false;
+fileData.content = content;
+updateTabModifiedState(activeFileId);
+if (fileData.path) {
+const treeItem = fileTree.get(fileData.path);
+if (treeItem) treeItem.modified = false;
+}
+
+showNotification('保存しました');
+} catch (err) {
+showNotification('保存に失敗しました: ' + err.message, 'error');
+}
+}
+
+// 全ファイルを保存
+async function saveAllFiles() {
+let saved = 0;
+let skipped = 0;
+
+for (const [fileId, fileData] of files.entries()) {
+if (fileData.modified && !fileData.binary) {
+const handle = fileHandles.get(fileId);
+if (handle) {
+try {
+const editor = editors.get(fileId);
+const content = editor.getValue();
+
+const writable = await handle.createWritable();
+await writable.write(content);
+await writable.close();
+
+fileData.modified = false;
+fileData.content = content;
+updateTabModifiedState(fileId);
+saved++;
+} catch (err) {
+console.error('Failed to save:', err);
+}
+} else {
+skipped++;
+}
+}
+}
+
+const skipInfo = skipped > 0 ? ` / 保存先未設定 ${skipped}件` : '';
+showNotification(`保存しました: ${saved}件${skipInfo}`);
+}
+
+// コード整形
+function formatCode() {
+if (!activeFileId) return;
+
+const editor = editors.get(activeFileId);
+if (editor) {
+editor.getAction('editor.action.formatDocument').run();
+showNotification('整形しました');
+}
+}
+
+// 新規ファイル作成
+function createNewFile(suggestedName = '', initialContent = '') {
+ensureWorkspaceRoot();
+const parentPath = getTargetFolderPath();
+const defaultName = suggestedName || 'index.html';
+const filename = prompt('ファイル名を入力してください', defaultName);
+if (!filename) return;
+
+const entry = createVirtualFileEntry(parentPath, filename, initialContent, true);
+renderFileTree();
+openTreeFile(entry.filePath);
+hideWelcomeScreen();
+setSelectedFolder(parentPath);
+}
+
+// 新規フォルダ作成
+function createNewFolder(suggestedName = '') {
+ensureWorkspaceRoot();
+const parentPath = getTargetFolderPath();
+const defaultName = suggestedName || '新規フォルダ';
+const folderName = prompt('フォルダ名を入力してください', defaultName);
+if (!folderName) return;
+
+const entry = createVirtualFolderEntry(parentPath, folderName);
+renderFileTree();
+setSelectedFolder(entry.folderPath);
+hideWelcomeScreen();
+showNotification('フォルダを追加しました');
+}
+
+function createStarterProject() {
+ensureWorkspaceRoot();
+const parentPath = getTargetFolderPath();
+const htmlTemplate = `
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>はじめてのWebページ</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<h1>こんにちは！</h1>
+	<p>ここに文章を書いてみましょう。</p>
+	<button id="hello-button">クリックしてね</button>
+	<script src="script.js"></script>
+</body>
+
+</html>`;
+const cssTemplate = `body {
+font-family: "Helvetica Neue", Arial, sans-serif;
+padding: 32px;
+line-height: 1.6;
+background: #f9f9fb;
+color: #222;
+}
+
+h1 {
+color: #2b6cb0;
+}
+
+button {
+padding: 10px 16px;
+border: none;
+border-radius: 8px;
+background: #2b6cb0;
+color: #fff;
+cursor: pointer;
+}
+`;
+const jsTemplate = `const button = document.getElementById("hello-button");
+button.addEventListener("click", () => {
+alert("クリックありがとう！");
+});
+`;
+
+const indexEntry = createVirtualFileEntry(parentPath, 'index.html', htmlTemplate, true);
+createVirtualFileEntry(parentPath, 'style.css', cssTemplate, true);
+createVirtualFileEntry(parentPath, 'script.js', jsTemplate, true);
+
+renderFileTree();
+openTreeFile(indexEntry.filePath);
+hideWelcomeScreen();
+setSelectedFolder(parentPath);
+showNotification('サンプルWebを作成しました');
+openPreviewTab();
+}
+
+// Gitクローン表示
+function showGitClone() {
+switchPanel('git');
+}
+
+// リポジトリをクローン
+async function cloneRepository() {
+const token = document.getElementById('github-token').value;
+const repo = document.getElementById('github-repo').value;
+const branch = document.getElementById('github-branch').value || 'main';
+
+if (!repo) {
+showGitStatus('リポジトリURLを入力してください', 'error');
+return;
+}
+
+showProgress('リポジトリをクローン中...');
+
+try {
+const repoMatch = repo.match(/github\.com\/([^\/]+)\/([^\/\.]+)/);
+if (!repoMatch) {
+throw new Error('GitHubのURL形式が正しくありません');
+}
+
+const owner = repoMatch[1];
+const repoName = repoMatch[2];
+
+const headers = {
+'Accept': 'application/vnd.github.v3+json'
+};
+
+if (token) {
+headers['Authorization'] = `token ${token}`;
+localStorage.setItem('githubToken', token); // Store token in localStorage
+} else {
+localStorage.removeItem('githubToken'); // Clear token if empty
+}
+
+// リポジトリ情報を取得
+const apiUrl = `https://api.github.com/repos/${owner}/${repoName}/git/trees/${branch}?recursive=1`;
+const response = await fetch(apiUrl, { headers });
+
+if (!response.ok) {
+throw new Error(`GitHub APIエラー: ${response.status}`);
+}
+
+const data = await response.json();
+const files = data.tree.filter(item => item.type === 'blob');
+
+// DBに保存
+const repoData = {
+name: repoName,
+owner: owner,
+url: repo,
+branch: branch,
+clonedAt: new Date().toISOString(),
+files: files.map(f => ({
+path: f.path,
+sha: f.sha,
+url: f.url
+}))
+};
+
+await saveRepository(repoData);
+await loadRepositories();
+
+hideProgress();
+showGitStatus(`${owner}/${repoName} をクローンしました`, 'success');
+} catch (err) {
+hideProgress();
+showGitStatus('クローンに失敗しました: ' + err.message, 'error');
+}
+}
+
+// リポジトリ一覧を読み込み
+async function loadRepositories() {
+const repos = await getRepositories();
+const container = document.getElementById('repo-list');
+container.innerHTML = '';
+
+if (repos.length === 0) {
+container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--color-text-light);">
+	クローン済みのリポジトリはありません</div>';
+activeRepo = null; // Clear activeRepo if no repos
+updateGitPanelDisplay(); // Update display
+return;
+}
+
+repos.forEach(repo => {
+const item = document.createElement('div');
+item.className = 'repo-item';
+item.innerHTML = `
+<div class="repo-info">
+	<div class="repo-name">${repo.owner}/${repo.name}</div>
+	<div class="repo-url">${repo.branch} • ${new Date(repo.clonedAt).toLocaleDateString()}</div>
+</div>
+<button class="repo-delete" onclick="deleteRepo(${repo.id}, event)">削除</button>
+`;
+
+item.addEventListener('click', (e) => {
+if (!e.target.classList.contains('repo-delete')) {
+loadRepositoryFiles(repo);
+}
+});
+
+container.appendChild(item);
+});
+updateGitPanelDisplay(); // Update display after loading repos
+}
+
+// リポジトリのファイルを読み込み
+async function loadRepositoryFiles(repo) {
+showProgress('リポジトリのファイルを読み込み中...');
+
+try {
+// ファイルツリーをクリア
+fileTree.clear();
+document.getElementById('file-tree').innerHTML = '';
+
+// ルートフォルダを作成
+const rootPath = repo.name;
+fileTree.set(rootPath, {
+name: repo.name,
+type: 'folder',
+children: [],
+expanded: true,
+isRepo: true,
+parent: null
+});
+
+// ファイルを追加
+for (const file of repo.files) {
+const parts = file.path.split('/');
+let currentPath = rootPath;
+
+// フォルダ構造を作成
+for (let i = 0; i < parts.length - 1; i++) { const folderPath=`${currentPath}/${parts[i]}`; if
+	(!fileTree.has(folderPath)) { fileTree.set(folderPath, { name: parts[i], type: 'folder' , children: [], expanded:
+	false, parent: currentPath }); fileTree.get(currentPath).children.push(folderPath); } currentPath=folderPath; } //
+	ファイルを追加 const fileName=parts[parts.length - 1]; const filePath=`${currentPath}/${fileName}`; fileTree.set(filePath,
+	{ name: fileName, type: 'file' , parent: currentPath, repoFile: file, repo: repo, originalContent: null // Will
+	store original content for diffing }); fileTree.get(currentPath).children.push(filePath); } activeRepo=repo; // Set
+	active repository selectedFolderPath=rootPath; renderFileTree(); switchPanel('files'); hideProgress();
+	showNotification(`${repo.owner}/${repo.name} を読み込みました`); updateGitPanelDisplay(); // Update display after loading
+	repo files } catch (err) { hideProgress(); showNotification('リポジトリの読み込みに失敗しました: ' + err.message, ' error'); } } //
+	リポジトリを削除 async function deleteRepo(id, event) { event?.stopPropagation(); if (!confirm('このリポジトリを一覧から削除しますか？')) {
+	return; } try { await deleteRepository(id); await loadRepositories(); showNotification('リポジトリを削除しました'); } catch
+	(err) { showNotification('リポジトリの削除に失敗しました: ' + err.message, ' error'); } } // Gitパネルの表示を更新 function
+	updateGitPanelDisplay() { const gitCloneSection=document.getElementById('git-clone-section'); const
+	gitRepoActions=document.getElementById('git-repo-actions'); const
+	currentRepoNameSpan=document.getElementById('current-repo-name'); if (activeRepo) {
+	gitCloneSection.style.display='none' ; gitRepoActions.style.display='block' ;
+	currentRepoNameSpan.textContent=`${activeRepo.owner}/${activeRepo.name}`; trackModifiedFiles(); } else {
+	gitCloneSection.style.display='block' ; gitRepoActions.style.display='none' ;
+	document.getElementById('changed-files-list').innerHTML='' ;
+	document.getElementById('changed-files-count').textContent='0' ; } } // 変更されたファイルを追跡し、リストを更新 function
+	trackModifiedFiles() { const changedFilesList=document.getElementById('changed-files-list'); const
+	changedFilesCountSpan=document.getElementById('changed-files-count'); changedFilesList.innerHTML='' ; let
+	modifiedCount=0; if (!activeRepo) { changedFilesCountSpan.textContent='0' ; return; } files.forEach((fileData,
+	fileId)=> {
+	// Only track modified files belonging to the active repository
+	// and are not binary, and have different content from original
+	if (!fileData.binary && fileData.repo && fileData.repo.id === activeRepo.id && fileData.content !==
+	fileData.originalContent) {
+	modifiedCount++;
+	const changedItem = document.createElement('div');
+	changedItem.className = 'repo-item'; // Reusing repo-item style
+	changedItem.style.padding = '8px';
+	changedItem.style.marginBottom = '4px';
+	changedItem.textContent = fileData.path.replace(`${activeRepo.name}/`, ''); // Show path relative to repo root
+	changedItem.dataset.fileId = fileId;
+	changedItem.addEventListener('click', () => openDiffEditor(fileId));
+	changedFilesList.appendChild(changedItem);
+	}
+	});
+	changedFilesCountSpan.textContent = modifiedCount.toString();
+	}
+
+	// 変更されたファイルの差分エディタを開く
+	async function openDiffEditor(fileId) {
+	const fileData = files.get(fileId);
+	if (!fileData || !fileData.repoFile || !fileData.repo || fileData.binary) {
+	showNotification('差分を開けません: リポジトリ外、バイナリ、または情報不足です。', 'error');
+	return;
+	}
+
+	// Create a new unique ID for the diff editor
+	const diffFileId = `diff-${fileId}`;
+
+	// Check if diff editor for this file is already open
+	if (editors.has(diffFileId)) {
+	switchToTab(diffFileId);
+	return;
+	}
+
+	// Create a new tab for the diff editor
+	createTab(diffFileId, `差分: ${fileData.name}`);
+
+	const container = document.getElementById('editor-container');
+	const wrapper = document.createElement('div');
+	wrapper.className = 'editor-wrapper';
+	wrapper.id = `editor-${diffFileId}`;
+	container.appendChild(wrapper);
+
+	const originalModel = monaco.editor.createModel(
+	fileData.originalContent,
+	getLanguageFromFilename(fileData.name)
+	);
+	const modifiedModel = monaco.editor.createModel(
+	fileData.content,
+	getLanguageFromFilename(fileData.name)
+	);
+
+	const diffEditor = monaco.editor.createDiffEditor(wrapper, {
+	theme: currentTheme === 'dark' ? 'vs-dark' : 'vs', // Use current theme
+	automaticLayout: true,
+	fontSize: 14,
+	readOnly: true, // Diff editor should be read-only
+	minimap: { enabled: true }
+	});
+
+	diffEditor.setModel({
+	original: originalModel,
+	modified: modifiedModel
+	});
+
+	editors.set(diffFileId, diffEditor);
+	switchToTab(diffFileId);
+	showNotification(`${fileData.name} の差分を開きました。`);
+	}
+
+	// 変更を「コミット」（ローカル保存）
+	async function commitChanges() {
+	if (!activeRepo) {
+	showNotification('コミットするリポジトリが選択されていません。', 'error');
+	return;
+	}
+	showProgress('変更をローカルでコミット中...');
+
+	let changesCommitted = 0;
+	let currentOpenEditorIds = new Set(files.keys()); // Get current open file IDs
+
+	// Iterate through files and save modified ones
+	for (const [fileId, fileData] of files.entries()) {
+	// Only process modified files belonging to the active repository
+	if (!fileData.binary && fileData.repo && fileData.repo.id === activeRepo.id && fileData.content !==
+	fileData.originalContent) {
+	// Update the original content for this file
+	fileData.originalContent = fileData.content;
+	fileData.modified = false; // Mark as not modified
+	changesCommitted++;
+
+	// If this file is currently open in an editor, update its tab state
+	if (currentOpenEditorIds.has(fileId)) {
+	updateTabModifiedState(fileId);
+	}
+	// If there's a diff editor open for this file, dispose of its models
+	// This is a simplification; a more robust solution would update the diff editor
+	const diffEditorId = `diff-${fileId}`;
+	if (editors.has(diffEditorId)) {
+	const diffEditor = editors.get(diffEditorId);
+	diffEditor.getModel().original.dispose();
+	diffEditor.getModel().modified.dispose();
+	diffEditor.dispose();
+	editors.delete(diffEditorId);
+	closeTab(diffEditorId); // Close the diff tab
+	}
+	}
+	}
+
+	// A true "commit" would involve versioning these changes and potentially saving the repoData to IndexedDB.
+	// For this local-only simulation, we just update the in-memory fileData and refresh the UI.
+	trackModifiedFiles(); // Refresh the list of modified files in the Git panel
+	hideProgress();
+	showNotification(`ローカルに ${changesCommitted} 件コミットしました。`);
+	}
+
+	// 変更を「プッシュ」
+	async function pushChanges() {
+	showNotification('この環境ではプッシュは未対応です。', 'info');
+	showNotification('実際のプッシュにはサーバーが必要です。', 'info');
+	}
+
+	// Git状態メッセージを表示
+	function showGitStatus(message, type = 'success') {
+	const status = document.getElementById('git-status');
+	status.textContent = message;
+	status.className = `git-status show ${type}`;
+
+	setTimeout(() => {
+	status.classList.remove('show');
+	}, 5000);
+	}
+
+	// ファイル数を更新
+	function updateFileCount() {
+	const count = Array.from(fileTree.values()).filter(item => item.type === 'file').length;
+	document.getElementById('file-count').textContent = count;
+	}
+
+	// UI制御
+	function showProgress(text) {
+	document.getElementById('progress-text').textContent = text;
+	document.getElementById('progress-overlay').classList.add('show');
+	}
+
+	function hideProgress() {
+	document.getElementById('progress-overlay').classList.remove('show');
+	}
+
+	function showNotification(message, type = 'success') {
+	const notification = document.createElement('div');
+	notification.className = 'notification';
+	notification.textContent = message;
+	if (type === 'error') {
+	notification.style.background = '#f44336';
+	}
+	document.body.appendChild(notification);
+	setTimeout(() => notification.remove(), 3000);
+	}
+
+	// キーボードショートカット
+	function setupKeyboardShortcuts() {
+	document.addEventListener('keydown', (e) => {
+	if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+	e.preventDefault();
+	saveCurrentFile();
+	} else if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+	e.preventDefault();
+	switchPanel('search');
+	} else if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+	e.preventDefault();
+	createNewFile();
+	} else if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+	e.preventDefault();
+	importFiles();
+	} else if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+	e.preventDefault();
+	openPreviewTab();
+	}
+	});
+	}
+	</script>
+
+	</body>
+
+</html>

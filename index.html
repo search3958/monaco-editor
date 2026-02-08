@@ -1,2179 +1,1751 @@
-<!DOCTYPE html>
-<html lang="ja">
+<!doctype html>
+<html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>BaramCode</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Baram Live Preview</title>
 	<style>
+		@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap");
+
+		:root {
+			color-scheme: light dark;
+			--bg: #f6f0e8;
+			--bg-ink: #1a1a1a;
+			--panel: #fffdf9;
+			--panel-strong: #ffffff;
+			--border: #e2d9cc;
+			--accent: #0b7a75;
+			--accent-strong: #08645f;
+			--muted: #746a5c;
+			--shadow: 0 20px 45px -35px rgba(22, 18, 9, 0.45);
+			--bg-gradient: radial-gradient(circle at top left, #fff8ee 0%, #f6f0e8 45%, #efe4d4 100%);
+			--topbar-bg: rgba(255, 253, 249, 0.9);
+			--button-secondary-bg: #f0e6d6;
+			--button-secondary-text: #2a231c;
+			--input-bg: #fbf6ef;
+			--preview-bg: #ffffff;
+			--status-dot: #f4b76f;
+			--file-item-bg: #f7f1e7;
+			--file-item-text: #3c342a;
+			--file-dot: #cbbfae;
+			--file-item-active-bg: #e7f4f1;
+			--file-item-active-text: #0b7a75;
+			--resizer: #d8cdbc;
+		}
+
+		@media (prefers-color-scheme: dark) {
+			:root {
+				--bg: #171512;
+				--bg-ink: #f2e9dd;
+				--panel: #241f1a;
+				--panel-strong: #2d2721;
+				--border: #3a3229;
+				--accent: #4cc9b0;
+				--accent-strong: #3bb39e;
+				--muted: #b7a997;
+				--shadow: 0 24px 50px -40px rgba(0, 0, 0, 0.7);
+				--bg-gradient: radial-gradient(circle at top left, #2b241d 0%, #191511 55%, #120f0c 100%);
+				--topbar-bg: rgba(27, 24, 20, 0.92);
+				--button-secondary-bg: #2c2620;
+				--button-secondary-text: #f2e9dd;
+				--input-bg: #2a241e;
+				--preview-bg: #111111;
+				--status-dot: #f0b56c;
+				--file-item-bg: #2a241e;
+				--file-item-text: #d9cdbf;
+				--file-dot: #756a5e;
+				--file-item-active-bg: #21413b;
+				--file-item-active-text: #8fe2d0;
+				--resizer: #3a332b;
+			}
+		}
+
 		* {
-			margin: 0;
-			padding: 0;
 			box-sizing: border-box;
 		}
 
-		body,
-		html {
-			height: 100%;
-			overflow: hidden;
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe WPC', 'Segoe UI Mono', 'Cascadia Code', Consolas, 'Liberation Mono', Menlo, Monaco, 'Courier New', monospace;
+		body {
+			margin: 0;
+			color: var(--bg-ink);
+			font-family: "Space Grotesk", "Noto Sans JP", sans-serif;
+			background: var(--bg-gradient);
 		}
 
-		/* 共通ボタンスタイル */
-		.btn,
-		.toolbar-btn,
-		.welcome-btn,
-		.search-btn,
-		.git-btn {
-			padding: 8px 16px;
-			background: #363636;
-			color: #cccccc;
-			border: 1px solid #5a5a5a;
-			border-radius: 8px;
-			cursor: pointer;
-			font-size: 13px;
-			font-family: inherit;
-			transition: all 0.15s ease;
-		}
-
-		.btn:hover,
-		.toolbar-btn:hover,
-		.welcome-btn:hover,
-		.search-btn:hover,
-		.git-btn:hover {
-			background: #404040;
-			border-color: #6a6a6a;
-		}
-
-		.btn:active,
-		.toolbar-btn:active,
-		.welcome-btn:active,
-		.search-btn:active,
-		.git-btn:active {
-			transform: scale(0.98);
-		}
-
-		.btn.primary,
-		.search-btn,
-		.git-btn,
-		.welcome-btn {
-			background: #0e639c;
-			border-color: #0e639c;
-			color: #ffffff;
-		}
-
-		.btn.primary:hover,
-		.search-btn:hover,
-		.git-btn:hover,
-		.welcome-btn:hover {
-			background: #1177bb;
-			border-color: #1177bb;
-		}
-
-		.btn.secondary,
-		.search-btn.secondary {
-			background: #3c3c3c;
-			border-color: #5a5a5a;
-		}
-
-		.btn.secondary:hover,
-		.search-btn.secondary:hover {
-			background: #505050;
-		}
-
-		.btn.danger {
-			background: #c1392b;
-			border-color: #c1392b;
-			color: #ffffff;
-		}
-
-		.btn.danger:hover {
-			background: #e74c3c;
-			border-color: #e74c3c;
-		}
-
-		/* 共通入力スタイル */
-		.input,
-		.search-input,
-		.git-input {
-			width: 100%;
-			padding: 8px 12px;
-			background: #3c3c3c;
-			border: 1px solid #5a5a5a;
-			color: #cccccc;
-			font-size: 13px;
-			border-radius: 6px;
-			font-family: inherit;
-			transition: border-color 0.15s ease;
-		}
-
-		.input:focus,
-		.search-input:focus,
-		.git-input:focus {
-			outline: none;
-			border-color: #007acc;
-		}
-
-		/* メインレイアウト */
-		#app {
-			display: flex;
-			flex-direction: column;
-			height: 100%;
-			background: #1e1e1e;
-		}
-
-		/* トップバー */
-		#topbar {
-			height: 35px;
-			background: #323233;
-			color: #cccccc;
-			display: flex;
-			align-items: center;
-			padding: 0 15px;
-			gap: 10px;
-			border-bottom: 1px solid #252526;
-			flex-shrink: 0;
-			position: relative;
-			z-index: 1000;
-		}
-
-		#topbar .title {
-			font-size: 13px;
-			font-weight: 400;
-		}
-
-		.menu-item {
-			padding: 0 8px;
-			height: 100%;
-			display: flex;
-			align-items: center;
-			cursor: pointer;
-			font-size: 13px;
-			transition: background 0.1s;
-			position: relative;
-		}
-
-		.menu-item:hover {
-			background: rgba(255, 255, 255, 0.1);
-		}
-
-		/* ドロップダウンメニュー */
-		.dropdown-menu {
-			display: none;
-			position: absolute;
-			top: 127%;
-			left: 0;
-			background: #1b1b1b73;
-			border: 1px solid #ffffff14;
-			border-radius: 24px;
-			min-width: 220px;
-			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-			padding: 4px 4px;
-			z-index: 2000;
-			corner-shape: superellipse(1.6);
-			backdrop-filter: blur(8px);
-		}
-
-		.dropdown-menu.show {
-			display: block;
-		}
-
-		.menu-item-option {
-			padding: 8px;
-			color: #cccccc;
-			cursor: pointer;
-			font-size: 13px;
-			display: flex;
-			align-items: center;
-			gap: 10px;
-			transition: background 0.1s;
-			corner-shape: superellipse(1.6);
-			border-radius: 18px;
-		}
-
-		.menu-item-option:hover {
-			background: rgba(255, 255, 255, 0.1);
-			backdrop-filter: brightness(2);
-		}
-
-		.menu-item-option .icon {
-			width: 16px;
-			text-align: center;
-		}
-
-		.menu-separator {
-			height: 1px;
-			background: #454545;
-			margin: 4px 0;
-		}
-
-		.spacer {
-			flex: 1;
-		}
-
-		/* メインコンテンツ */
-		#main-content {
-			display: flex;
-			flex: 1;
-			overflow: hidden;
-		}
-
-		/* ナビゲーションレール（左端） */
-		#nav-rail {
-			width: 48px;
-			background: #333333;
-			display: flex;
-			flex-direction: column;
-			border-right: 1px solid #252526;
-			flex-shrink: 0;
-		}
-
-		.nav-item {
-			width: 48px;
-			height: 48px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			cursor: pointer;
-			color: #858585;
-			font-size: 24px;
-			position: relative;
-			transition: color 0.1s;
-		}
-
-		.nav-item:hover {
-			color: #cccccc;
-		}
-
-		.nav-item.active {
-			color: #ffffff;
-		}
-
-		.nav-item.active::before {
-			content: '';
-			position: absolute;
-			left: 0;
-			top: 8px;
-			bottom: 8px;
-			width: 2px;
-			background: #007acc;
-		}
-
-		/* サイドバー */
-		#sidebar {
-			width: 280px;
-			background: #252526;
-			border-right: 1px solid #1e1e1e;
-			display: flex;
-			flex-direction: column;
-			overflow: hidden;
-			transition: width 0.2s, margin-left 0.2s;
-		}
-
-		#sidebar.collapsed {
-			width: 0;
-			margin-left: -280px;
-		}
-
-		.sidebar-header {
-			padding: 12px 20px;
-			background: #252526;
-			color: #cccccc;
-			font-size: 11px;
-			text-transform: uppercase;
-			font-weight: 600;
-			letter-spacing: 0.5px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			border-bottom: 1px solid #1e1e1e;
-		}
-
-		.sidebar-content {
-			flex: 1;
-			overflow-y: auto;
-			overflow-x: hidden;
-		}
-
-		.sidebar-content::-webkit-scrollbar {
-			width: 10px;
-		}
-
-		.sidebar-content::-webkit-scrollbar-track {
-			background: #252526;
-		}
-
-		.sidebar-content::-webkit-scrollbar-thumb {
-			background: #424242;
-			border-radius: 5px;
-		}
-
-		.sidebar-content::-webkit-scrollbar-thumb:hover {
-			background: #4e4e4e;
-		}
-
-		/* ファイルツリー */
-		.tree-item {
-			display: flex;
-			align-items: center;
-			padding: 4px 8px;
-			cursor: pointer;
-			color: #cccccc;
-			font-size: 13px;
-			user-select: none;
-			white-space: nowrap;
-		}
-
-		.tree-item:hover {
-			background: #2a2d2e;
-		}
-
-		.tree-item.selected {
-			background: #37373d;
-			color: #ffffff;
-		}
-
-		.tree-item.active-file {
-			background: #094771;
-			color: #ffffff;
-		}
-
-		.tree-indent {
-			display: inline-block;
-		}
-
-		.tree-arrow {
-			width: 16px;
-			height: 16px;
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			margin-right: 2px;
-			font-size: 10px;
-			color: #858585;
-			transition: transform 0.1s;
-		}
-
-		.tree-arrow.expanded {
-			transform: rotate(90deg);
-		}
-
-		.tree-arrow.empty {
-			visibility: hidden;
-		}
-
-		.tree-icon {
-			width: 16px;
-			height: 16px;
-			margin-right: 6px;
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-		}
-
-		.tree-label {
-			flex: 1;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
-
-		.tree-item.modified .tree-label::after {
-			content: ' ●';
-			color: #007acc;
-			margin-left: 4px;
-		}
-
-		/* エディタエリア */
-		#editor-area {
-			flex: 1;
-			display: flex;
-			flex-direction: column;
-			overflow: hidden;
-			background: #1e1e1e;
-		}
-
-		/* タブバー */
-		#tab-bar {
-			display: flex;
-			background: #252526;
-			border-bottom: 1px solid #1e1e1e;
-			overflow-x: auto;
-			overflow-y: hidden;
-			height: 35px;
-			align-items: stretch;
-		}
-
-		#tab-bar::-webkit-scrollbar {
-			height: 0;
-		}
-
-		.tab {
-			padding: 0 12px;
-			background: #2d2d2d;
-			color: rgba(255, 255, 255, 0.5);
-			cursor: pointer;
-			border-right: 1px solid #252526;
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			font-size: 13px;
-			white-space: nowrap;
-			min-width: 100px;
-			max-width: 200px;
-			position: relative;
-		}
-
-		.tab:hover {
-			color: rgba(255, 255, 255, 0.8);
-		}
-
-		.tab.active {
-			background: #1e1e1e;
-			color: #ffffff;
-			border-top: 1px solid #007acc;
-		}
-
-		.tab-icon {
-			font-size: 16px;
-		}
-
-		.tab-label {
-			flex: 1;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
-
-		.tab-close {
-			width: 20px;
-			height: 20px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			opacity: 0;
-			border-radius: 3px;
-			font-size: 16px;
-		}
-
-		.tab:hover .tab-close {
-			opacity: 0.6;
-		}
-
-		.tab-close:hover {
-			background: rgba(255, 255, 255, 0.15);
-			opacity: 1 !important;
-		}
-
-		.tab.modified .tab-close::before {
-			content: '●';
-			font-size: 18px;
-			color: #007acc;
-		}
-
-		.tab.modified:hover .tab-close::before {
-			content: '×';
-			color: inherit;
-		}
-
-		/* エディタコンテナ */
-		#editor-container {
-			flex: 1;
-			position: relative;
-			background: #1e1e1e;
-		}
-
-		.editor-wrapper {
-			position: absolute;
+		.topbar {
+			position: sticky;
 			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			display: none;
-		}
-
-		.editor-wrapper.active {
-			display: block;
-		}
-
-		/* バイナリファイル警告 */
-		.binary-warning {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			height: 100%;
-			color: #cccccc;
-			text-align: center;
-			padding: 40px;
-		}
-
-		.binary-warning-icon {
-			font-size: 64px;
-			margin-bottom: 20px;
-		}
-
-		.binary-warning-title {
-			font-size: 18px;
-			font-weight: 500;
-			margin-bottom: 10px;
-		}
-
-		.binary-warning-message {
-			font-size: 14px;
-			color: #858585;
-			margin-bottom: 20px;
-		}
-
-		/* 検索パネル */
-		#search-panel {
-			display: none;
-			flex-direction: column;
-		}
-
-		#search-panel.active {
-			display: flex;
-		}
-
-		.search-container {
-			padding: 15px 20px;
-		}
-
-		.search-input-group {
-			margin-bottom: 12px;
-		}
-
-		.search-input-wrapper {
-			position: relative;
-			margin-bottom: 8px;
-		}
-
-		.search-input-icon {
-			position: absolute;
-			right: 8px;
-			top: 50%;
-			transform: translateY(-50%);
-			color: #858585;
-			font-size: 14px;
-		}
-
-		.search-options {
-			display: flex;
-			gap: 4px;
-			margin-top: 8px;
-		}
-
-		.search-option {
-			width: 28px;
-			height: 28px;
+			z-index: 5;
 			display: flex;
 			align-items: center;
-			justify-content: center;
-			background: #3c3c3c;
-			border: 1px solid #5a5a5a;
-			border-radius: 6px;
-			cursor: pointer;
-			color: #858585;
-			font-size: 14px;
-			font-weight: 600;
-			transition: all 0.15s ease;
-		}
-
-		.search-option:hover {
-			background: #505050;
-		}
-
-		.search-option.active {
-			background: #094771;
-			border-color: #007acc;
-			color: #ffffff;
-		}
-
-		.search-actions {
-			display: flex;
-			gap: 8px;
-			margin-top: 12px;
-		}
-
-		.search-results {
-			flex: 1;
-			overflow-y: auto;
-			padding: 0 20px 20px;
-		}
-
-		.search-result-item {
-			padding: 8px 12px;
-			margin-bottom: 4px;
-			background: #2d2d2d;
-			border-radius: 6px;
-			cursor: pointer;
-			transition: background 0.15s ease;
-		}
-
-		.search-result-item:hover {
-			background: #37373d;
-		}
-
-		.search-result-file {
-			font-size: 13px;
-			color: #cccccc;
-			margin-bottom: 4px;
-			font-weight: 500;
-		}
-
-		.search-result-line {
-			font-size: 12px;
-			color: #858585;
-			font-family: 'Courier New', monospace;
-		}
-
-		.search-result-match {
-			background: #4a4a0a;
-			color: #ffff00;
-			padding: 0 2px;
-		}
-
-		/* Gitパネル */
-		#git-panel {
-			display: none;
-			flex-direction: column;
-		}
-
-		#git-panel.active {
-			display: flex;
-		}
-
-		.git-container {
-			padding: 15px 20px;
-		}
-
-		.git-section {
-			margin-bottom: 20px;
-		}
-
-		.git-section-title {
-			font-size: 11px;
-			color: #858585;
-			text-transform: uppercase;
-			margin-bottom: 8px;
-			letter-spacing: 0.5px;
-		}
-
-		.git-input {
-			margin-bottom: 8px;
-		}
-
-		.git-btn {
-			width: 100%;
-			margin-bottom: 6px;
-		}
-
-		.git-status {
-			padding: 12px;
-			background: #1e1e1e;
-			border-left: 3px solid #007acc;
-			border-radius: 6px;
-			font-size: 12px;
-			color: #cccccc;
-			margin-top: 10px;
-			display: none;
-		}
-
-		.git-status.show {
-			display: block;
-		}
-
-		.git-status.error {
-			border-left-color: #f44336;
-		}
-
-		.git-status.success {
-			border-left-color: #4caf50;
-		}
-
-		.repo-list {
-			flex: 1;
-			overflow-y: auto;
-			padding: 0 20px 20px;
-		}
-
-		.repo-item {
-			padding: 12px;
-			margin-bottom: 6px;
-			background: #2d2d2d;
-			border-radius: 8px;
-			cursor: pointer;
-			transition: all 0.15s ease;
-			display: flex;
 			justify-content: space-between;
-			align-items: center;
+			padding: 12px 20px;
+			gap: 16px;
+			background: var(--topbar-bg);
+			backdrop-filter: blur(14px);
+			border-bottom: 1px solid var(--border);
 		}
 
-		.repo-item:hover {
-			background: #37373d;
-		}
-
-		.repo-info {
-			flex: 1;
-		}
-
-		.repo-name {
-			font-size: 13px;
-			color: #cccccc;
-			font-weight: 500;
-			margin-bottom: 4px;
-		}
-
-		.repo-url {
-			font-size: 11px;
-			color: #858585;
-		}
-
-		.repo-delete {
-			padding: 6px 10px;
-			background: transparent;
-			border: 1px solid #5a5a5a;
-			border-radius: 6px;
-			color: #858585;
-			cursor: pointer;
-			font-size: 12px;
-			transition: all 0.15s ease;
-		}
-
-		.repo-delete:hover {
-			background: #c1392b;
-			border-color: #c1392b;
-			color: #ffffff;
-		}
-
-		/* ツールバー */
-		.toolbar {
-			padding: 10px 20px;
-			background: #252526;
-			border-bottom: 1px solid #1e1e1e;
+		.brand {
 			display: flex;
-			gap: 8px;
+			align-items: center;
+			gap: 12px;
 			flex-wrap: wrap;
 		}
 
-		/* 通知 */
-		.notification {
-			position: fixed;
-			bottom: 20px;
-			right: 20px;
-			background: #4caf50;
-			color: white;
-			padding: 12px 20px;
-			border-radius: 8px;
-			z-index: 3000;
-			animation: slideIn 0.3s;
-			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-			font-size: 13px;
-		}
-
-		@keyframes slideIn {
-			from {
-				transform: translateX(100%);
-				opacity: 0;
-			}
-
-			to {
-				transform: translateX(0);
-				opacity: 1;
-			}
-		}
-
-		/* プログレス */
-		.progress-overlay {
-			display: none;
-			position: fixed;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background: rgba(0, 0, 0, 0.8);
-			z-index: 2000;
+		.brand-input {
+			display: inline-flex;
 			align-items: center;
-			justify-content: center;
+			gap: 8px;
+			padding: 6px 12px;
+			border-radius: 999px;
+			border: 1px solid var(--border);
+			background: var(--panel);
 		}
 
-		.progress-overlay.show {
+		.brand-input span {
+			font-size: 0.8rem;
+			color: var(--muted);
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+		}
+
+		.brand-input input {
+			border: none;
+			background: transparent;
+			font-family: "Space Grotesk", "Noto Sans JP", sans-serif;
+			font-size: 0.95rem;
+			font-weight: 600;
+			color: var(--bg-ink);
+			width: 200px;
+			outline: none;
+		}
+
+		.controls {
 			display: flex;
+			flex-wrap: wrap;
+			gap: 10px;
+			align-items: center;
+			justify-content: flex-end;
 		}
 
-		.progress-content {
-			background: #252526;
-			padding: 30px;
-			border-radius: 8px;
-			text-align: center;
-			color: white;
+		.control-group {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			padding: 6px 10px;
+			border-radius: 999px;
+			border: 1px solid var(--border);
+			background: var(--panel);
 		}
 
-		.spinner {
-			border: 3px solid #3c3c3c;
-			border-top: 3px solid #007acc;
-			border-radius: 50%;
-			width: 40px;
-			height: 40px;
-			animation: spin 1s linear infinite;
-			margin: 0 auto 15px;
+		.control-group label {
+			font-size: 0.85rem;
+			color: var(--muted);
 		}
 
-		@keyframes spin {
-			0% {
-				transform: rotate(0deg);
-			}
-
-			100% {
-				transform: rotate(360deg);
-			}
+		.control-group input[type="checkbox"] {
+			accent-color: var(--accent);
+			width: 16px;
+			height: 16px;
 		}
 
-		/* ウェルカム画面 */
-		.welcome-screen {
+		button {
+			border: none;
+			border-radius: 999px;
+			padding: 8px 14px;
+			background: var(--accent);
+			color: #fff;
+			font-weight: 600;
+			cursor: pointer;
+			transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+			box-shadow: 0 10px 20px -12px rgba(11, 122, 117, 0.7);
+		}
+
+		button:hover {
+			transform: translateY(-1px);
+			background: var(--accent-strong);
+		}
+
+		button.secondary {
+			background: var(--button-secondary-bg);
+			color: var(--button-secondary-text);
+			box-shadow: none;
+			border: 1px solid var(--border);
+		}
+
+		button.ghost {
+			background: transparent;
+			color: var(--muted);
+			box-shadow: none;
+			border: 1px solid var(--border);
+		}
+
+		.segmented {
+			display: inline-flex;
+			gap: 4px;
+			padding: 4px;
+			border-radius: 999px;
+			border: 1px solid var(--border);
+			background: var(--panel);
+		}
+
+		.segmented button {
+			background: transparent;
+			color: var(--muted);
+			box-shadow: none;
+			padding: 6px 12px;
+		}
+
+		.segmented button.is-active {
+			background: var(--accent);
+			color: #fff;
+		}
+
+		.segmented button.is-locked {
+			opacity: 0.5;
+			pointer-events: none;
+		}
+
+		.workspace {
+			display: flex;
+			gap: 16px;
+			padding: 16px 20px 24px;
+			height: calc(100vh - 78px);
+		}
+
+		.file-panel {
+			flex: 0 0 240px;
+			max-width: 260px;
+			min-width: 200px;
+		}
+
+		.workspace.files-collapsed .file-panel {
+			display: none;
+		}
+
+		.main-pane {
+			flex: 1;
+			display: flex;
+			gap: 16px;
+			min-width: 0;
+			min-height: 0;
+		}
+
+		.workspace.layout-right .main-pane {
+			flex-direction: row;
+		}
+
+		.workspace.layout-bottom .main-pane {
+			flex-direction: column;
+		}
+
+		.workspace.layout-hide .preview {
+			display: none;
+		}
+
+		.panel {
+			background: var(--panel);
+			border: 1px solid var(--border);
+			border-radius: 16px;
+			box-shadow: var(--shadow);
 			display: flex;
 			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			height: 100%;
-			color: #cccccc;
-			text-align: center;
-			padding: 40px;
+			overflow: hidden;
+			min-height: 0;
 		}
 
-		.welcome-logo {
-			font-size: 64px;
-			margin-bottom: 20px;
-		}
-
-		.welcome-title {
-			font-size: 24px;
-			font-weight: 300;
-			margin-bottom: 10px;
-		}
-
-		.welcome-subtitle {
-			font-size: 14px;
-			color: #858585;
-			margin-bottom: 30px;
-		}
-
-		.welcome-actions {
+		.panel-header {
 			display: flex;
-			gap: 15px;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+			padding: 10px 14px;
+			border-bottom: 1px solid var(--border);
+			background: var(--panel-strong);
+			font-size: 0.85rem;
 		}
 
-		.icon img {
-			filter: brightness(2);
-			height: 16px;
-			margin-top: 2px;
+		.panel-header .title {
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
 		}
 
-		/* モバイル対応 */
-		@media (max-width: 768px) {
-			#nav-rail {
-				width: 40px;
+		.panel-header .input-wrap {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 4px 8px;
+			background: var(--input-bg);
+		}
+
+		.panel-header .input-wrap span {
+			color: var(--muted);
+			font-size: 0.74rem;
+		}
+
+		.panel-header .input-wrap input {
+			border: none;
+			background: transparent;
+			font-family: "JetBrains Mono", monospace;
+			font-size: 0.78rem;
+			width: 140px;
+			outline: none;
+		}
+
+		.editors {
+			display: flex;
+			gap: 14px;
+			min-height: 0;
+			flex: 1;
+		}
+
+		.editors.editors-block {
+			flex-direction: column;
+		}
+
+		.editors.editors-flex {
+			flex-direction: row;
+		}
+
+		.editor-panel {
+			flex: 1 1 0;
+			min-height: 160px;
+			min-width: 220px;
+		}
+
+		.panel-actions {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.resize-handle {
+			flex: 0 0 auto;
+			background: var(--resizer);
+			border-radius: 999px;
+			opacity: 0.9;
+		}
+
+		.editors.editors-block .resize-handle {
+			height: 6px;
+			cursor: row-resize;
+			margin: -4px 6px;
+		}
+
+		.editors.editors-flex .resize-handle {
+			width: 6px;
+			cursor: col-resize;
+			margin: 6px -4px;
+			align-self: stretch;
+		}
+
+		.preview-resize-handle {
+			flex: 0 0 auto;
+			background: var(--resizer);
+			border-radius: 999px;
+			opacity: 0.85;
+			transition: background 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+			touch-action: none;
+		}
+
+		.workspace.layout-right .preview-resize-handle {
+			width: 12px;
+			cursor: col-resize;
+			margin: 6px -6px;
+		}
+
+		.workspace.layout-bottom .preview-resize-handle {
+			height: 12px;
+			cursor: row-resize;
+			margin: -6px 6px;
+		}
+
+		.workspace.layout-hide .preview-resize-handle {
+			display: none;
+		}
+
+		.preview-resize-handle:hover,
+		.preview-resize-handle.is-dragging {
+			background: var(--accent);
+			opacity: 1;
+			box-shadow: 0 0 0 4px rgba(11, 122, 117, 0.2);
+		}
+
+		.editor {
+			flex: 1;
+			min-height: 0;
+		}
+
+		.preview {
+			min-height: 0;
+			flex: 0.9;
+			min-width: 240px;
+			min-height: 200px;
+		}
+
+		#previewFrame {
+			flex: 1;
+			width: 100%;
+			border: none;
+			background: var(--preview-bg);
+		}
+
+		.status {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			color: var(--muted);
+			font-size: 0.78rem;
+		}
+
+		.status .dot {
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: var(--status-dot);
+		}
+
+		.file-groups {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+			padding: 12px 14px 16px;
+			overflow: auto;
+		}
+
+		.file-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.file-group.group-collapsed .file-list {
+			display: none;
+		}
+
+		.file-group-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+		}
+
+		.file-group-header button {
+			padding: 6px 10px;
+			font-size: 0.78rem;
+		}
+
+		.file-list {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+
+		.file-item {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			justify-content: space-between;
+			padding: 8px 10px;
+			border-radius: 10px;
+			border: 1px solid transparent;
+			background: var(--file-item-bg);
+			color: var(--file-item-text);
+		}
+
+		.file-select {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			flex: 1;
+			border: none;
+			background: transparent;
+			font-family: "JetBrains Mono", monospace;
+			font-size: 0.78rem;
+			cursor: pointer;
+			color: inherit;
+			text-align: left;
+			padding: 0;
+			box-shadow: none;
+			border-radius: 0;
+		}
+
+		.file-delete {
+			border: none;
+			background: transparent;
+			color: var(--muted);
+			padding: 4px 8px;
+			border-radius: 999px;
+			cursor: pointer;
+			box-shadow: none;
+		}
+
+		.file-delete:hover {
+			background: var(--panel-strong);
+			color: var(--bg-ink);
+		}
+
+		.file-delete:disabled {
+			opacity: 0.45;
+			cursor: not-allowed;
+		}
+
+		.file-item .file-dot {
+			width: 6px;
+			height: 6px;
+			border-radius: 999px;
+			background: var(--file-dot);
+		}
+
+		.file-item.is-active {
+			border-color: var(--accent);
+			background: var(--file-item-active-bg);
+			color: var(--file-item-active-text);
+		}
+
+		.file-item.is-active .file-dot {
+			background: var(--accent);
+		}
+
+		.file-item.is-active .file-delete {
+			color: var(--file-item-active-text);
+		}
+
+		@media (max-width: 1200px) {
+			.editors.editors-flex {
+				flex-direction: column;
 			}
 
-			.nav-item {
-				width: 40px;
-				height: 40px;
-				font-size: 20px;
+			.editors.editors-flex .resize-handle {
+				width: auto;
+				height: 6px;
+				cursor: row-resize;
+				margin: -4px 6px;
+				align-self: auto;
+			}
+		}
+
+		@media (max-width: 1100px) {
+			.workspace {
+				flex-direction: column;
+				height: auto;
 			}
 
-			#sidebar {
-				position: absolute;
-				left: 40px;
-				top: 35px;
-				bottom: 0;
-				z-index: 100;
-				transform: translateX(-100%);
-				transition: transform 0.3s;
+			.file-panel {
+				max-width: none;
 			}
 
-			#sidebar.mobile-open {
-				transform: translateX(0);
+			.main-pane {
+				flex-direction: column;
+			}
+
+			.preview-resize-handle {
+				width: auto;
+				height: 12px;
+				cursor: row-resize;
+				margin: -6px 6px;
+			}
+		}
+
+		@media (max-width: 720px) {
+			.topbar {
+				position: static;
+				flex-direction: column;
+				align-items: stretch;
+			}
+
+			.brand-input input {
+				width: 160px;
 			}
 		}
 	</style>
 </head>
 
 <body>
-
-	<div id="app">
-		<!-- トップバー -->
-		<div id="topbar">
-			<span class="title">BaramCode</span>
-			<div class="menu-item" id="file-menu">
-				File
-				<div class="dropdown-menu" id="file-dropdown">
-					<div class="menu-item-option" onclick="openFiles()">
-						<span class="icon"><img src="icons/open_file.svg"></span>
-						<span>Open File...</span>
-					</div>
-					<div class="menu-item-option" onclick="openFolder()">
-						<span class="icon"><img src="icons/open_folder.svg"></span>
-						<span>Open Folder...</span>
-					</div>
-					<div class="menu-separator"></div>
-					<div class="menu-item-option" onclick="createNewFile()">
-						<span class="icon"><img src="icons/new_file.svg"></span>
-						<span>New File</span>
-					</div>
-					<div class="menu-item-option" onclick="createNewFolder()">
-						<span class="icon"><img src="icons/new_folder.svg"></span>
-						<span>New Folder</span>
-					</div>
-					<div class="menu-separator"></div>
-					<div class="menu-item-option" onclick="showGitClone()">
-						<span class="icon"><img src="icons/clone_from_github.svg"></span>
-						<span>Clone from GitHub...</span>
-					</div>
-					<div class="menu-separator"></div>
-					<div class="menu-item-option" onclick="saveCurrentFile()">
-						<span class="icon"><img src="icons/save.svg"></span>
-						<span>Save</span>
-					</div>
-					<div class="menu-item-option" onclick="saveAllFiles()">
-						<span class="icon"><img src="icons/save_all.svg"></span>
-						<span>Save All</span>
-					</div>
-				</div>
-			</div>
-			<div class="menu-item" id="edit-menu">
-				Edit
-				<div class="dropdown-menu" id="edit-dropdown">
-					<div class="menu-item-option" onclick="formatCode()">
-						<span class="icon"><img src="icons/format_document.svg"></span>
-						<span>Format Document</span>
-					</div>
-					<div class="menu-separator"></div>
-					<div class="menu-item-option" onclick="switchPanel('search')">
-						<span class="icon"><img src="icons/find.svg"></span>
-						<span>Find...</span>
-					</div>
-					<div class="menu-item-option" onclick="switchPanel('search')">
-						<span class="icon"><img src="icons/replace.svg"></span>
-						<span>Replace...</span>
-					</div>
-				</div>
-			</div>
-			<div class="menu-item" id="view-menu">
-				View
-				<div class="dropdown-menu" id="view-dropdown">
-					<div class="menu-item-option" onclick="switchPanel('files')">
-						<span class="icon"><img src="icons/explorer.svg"></span>
-						<span>Explorer</span>
-					</div>
-					<div class="menu-item-option" onclick="switchPanel('search')">
-						<span class="icon"><img src="icons/search.svg"></span>
-						<span>Search</span>
-					</div>
-					<div class="menu-item-option" onclick="switchPanel('git')">
-						<span class="icon"><img src="icons/source_control.svg"></span>
-						<span>Source Control</span>
-					</div>
-				</div>
-			</div>
-			<div class="spacer"></div>
-			<div class="menu-item" id="current-file-name"></div>
-		</div>
-
-		<!-- メインコンテンツ -->
-		<div id="main-content">
-			<!-- ナビゲーションレール -->
-			<div id="nav-rail">
-				<div class="nav-item active" data-panel="files" title="Files">
-					<img src="icons/explorer.svg">
-				</div>
-				<div class="nav-item" data-panel="search" title="Search">
-					<img src="icons/search.svg">
-				</div>
-				<div class="nav-item" data-panel="git" title="Source Control">
-					<img src="icons/source_control.svg">
-				</div>
-			</div>
-
-			<!-- サイドバー -->
-			<div id="sidebar">
-				<!-- ファイルパネル -->
-				<div id="files-panel">
-					<div class="sidebar-header">
-						<span>EXPLORER</span>
-						<span id="file-count">0</span>
-					</div>
-					<div class="toolbar">
-						<button class="toolbar-btn" onclick="openFiles()" title="Open Files">📄 Open</button>
-						<button class="toolbar-btn" onclick="openFolder()" title="Open Folder">📂 Folder</button>
-					</div>
-					<div class="sidebar-content" id="file-tree"></div>
-				</div>
-
-				<!-- 検索パネル -->
-				<div id="search-panel">
-					<div class="sidebar-header">
-						<span>SEARCH</span>
-					</div>
-					<div class="search-container">
-						<div class="search-input-group">
-							<div class="search-input-wrapper">
-								<input type="text" class="search-input" id="search-text" placeholder="Search">
-								<span class="search-input-icon">🔍</span>
-							</div>
-							<div class="search-input-wrapper">
-								<input type="text" class="search-input" id="replace-text" placeholder="Replace">
-								<span class="search-input-icon">🔄</span>
-							</div>
-							<div class="search-options">
-								<div class="search-option" id="search-case" title="Match Case">Aa</div>
-								<div class="search-option" id="search-word" title="Match Whole Word">ab</div>
-								<div class="search-option" id="search-regex" title="Use Regular Expression">.*</div>
-							</div>
-						</div>
-						<div class="search-actions">
-							<button class="search-btn secondary" onclick="searchInFiles()">Search</button>
-							<button class="search-btn" onclick="replaceInFiles()">Replace</button>
-						</div>
-					</div>
-					<div class="search-results" id="search-results"></div>
-				</div>
-
-				<!-- Gitパネル -->
-				<div id="git-panel">
-					<div class="sidebar-header">
-						<span>SOURCE CONTROL</span>
-					</div>
-					<div class="git-container">
-						<div class="git-section">
-							<div class="git-section-title">Clone Repository</div>
-							<input type="password" class="git-input" id="github-token"
-								placeholder="GitHub Token (optional)">
-							<input type="text" class="git-input" id="github-repo" placeholder="Repository URL">
-							<input type="text" class="git-input" id="github-branch" value="main" placeholder="Branch">
-							<button class="git-btn" onclick="cloneRepository()">Clone</button>
-						</div>
-						<div id="git-status" class="git-status"></div>
-					</div>
-					<div class="sidebar-header">
-						<span>CLONED REPOSITORIES</span>
-					</div>
-					<div class="repo-list" id="repo-list"></div>
-				</div>
-			</div>
-
-			<!-- エディタエリア -->
-			<div id="editor-area">
-				<div id="tab-bar"></div>
-				<div id="editor-container">
-					<div class="welcome-screen" id="welcome-screen">
-						<div class="welcome-logo">📝</div>
-						<div class="welcome-title">BaramCode</div>
-						<div class="welcome-subtitle">開始しましょう。</div>
-						<div class="welcome-actions">
-							<button class="welcome-btn" onclick="openFiles()">Open File</button>
-							<button class="welcome-btn" onclick="openFolder()">Open Folder</button>
-						</div>
-					</div>
-				</div>
+	<header class="topbar">
+		<div class="brand">
+			<button id="backBtn" class="secondary">Welcome</button>
+			<div class="brand-input">
+				<span>Project</span>
+				<input id="projectName" type="text" value="Baram Live Preview" />
 			</div>
 		</div>
-	</div>
-
-	<!-- プログレス表示 -->
-	<div id="progress-overlay" class="progress-overlay">
-		<div class="progress-content">
-			<div class="spinner"></div>
-			<div id="progress-text">Processing...</div>
+		<div class="controls">
+			<div class="control-group">
+				<input id="autoUpdate" type="checkbox" checked />
+				<label for="autoUpdate">Auto update</label>
+			</div>
+			<div class="control-group">
+				<input id="cssHot" type="checkbox" checked />
+				<label for="cssHot">CSS hot reload</label>
+			</div>
+			<button id="runBtn">Run</button>
+			<div class="segmented" id="previewLayout" role="group" aria-label="Preview layout">
+				<button class="is-active" data-layout="right">Right</button>
+				<button data-layout="bottom">Bottom</button>
+				<button data-layout="hide">Hide</button>
+			</div>
+			<div class="segmented" id="editorLayout" role="group" aria-label="Editor layout">
+				<button class="is-active" data-layout="block">Block</button>
+				<button data-layout="flex">Flex</button>
+			</div>
+			<button id="toggleFilesBtn" class="secondary">Hide Files</button>
+			<button id="downloadBtn" class="secondary">Download Zip</button>
+			<button id="openTabBtn" class="secondary">Open Preview Tab</button>
 		</div>
-	</div>
+	</header>
 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+	<main class="workspace layout-right" id="workspace">
+		<aside class="panel file-panel" id="filePanel">
+			<div class="panel-header">
+				<span class="title">Files</span>
+				<button id="toggleFilesPanel" class="ghost">Collapse</button>
+			</div>
+			<div class="file-groups">
+				<div class="file-group" data-type="html">
+					<div class="file-group-header">
+						<button class="ghost group-toggle" data-type="html">HTML</button>
+						<button class="ghost add-file" data-type="html">Add</button>
+					</div>
+					<div class="file-list" id="fileListHtml"></div>
+				</div>
+				<div class="file-group" data-type="css">
+					<div class="file-group-header">
+						<button class="ghost group-toggle" data-type="css">CSS</button>
+						<button class="ghost add-file" data-type="css">Add</button>
+					</div>
+					<div class="file-list" id="fileListCss"></div>
+				</div>
+				<div class="file-group" data-type="js">
+					<div class="file-group-header">
+						<button class="ghost group-toggle" data-type="js">JS</button>
+						<button class="ghost add-file" data-type="js">Add</button>
+					</div>
+					<div class="file-list" id="fileListJs"></div>
+				</div>
+			</div>
+		</aside>
+
+		<div class="main-pane">
+			<section class="editors editors-block" id="editorsPane">
+				<div class="panel editor-panel" data-editor="html">
+					<div class="panel-header">
+						<span class="title">HTML</span>
+						<div class="panel-actions">
+							<label class="input-wrap">
+								<span>file</span>
+								<input id="htmlName" type="text" value="index.html" />
+							</label>
+						</div>
+					</div>
+					<div class="editor" id="editor-html"></div>
+				</div>
+				<div class="resize-handle" data-after="html" aria-hidden="true"></div>
+				<div class="panel editor-panel" data-editor="css">
+					<div class="panel-header">
+						<span class="title">CSS</span>
+						<div class="panel-actions">
+							<label class="input-wrap">
+								<span>file</span>
+								<input id="cssName" type="text" value="styles.css" />
+							</label>
+						</div>
+					</div>
+					<div class="editor" id="editor-css"></div>
+				</div>
+				<div class="resize-handle" data-after="css" aria-hidden="true"></div>
+				<div class="panel editor-panel" data-editor="js">
+					<div class="panel-header">
+						<span class="title">JS</span>
+						<div class="panel-actions">
+							<label class="input-wrap">
+								<span>file</span>
+								<input id="jsName" type="text" value="app.js" />
+							</label>
+						</div>
+					</div>
+					<div class="editor" id="editor-js"></div>
+				</div>
+			</section>
+
+			<div class="preview-resize-handle" id="previewResize" aria-hidden="true"></div>
+
+			<section class="panel preview" id="previewPane">
+				<div class="panel-header">
+					<span class="title">Preview</span>
+					<span class="status" id="previewStatus">
+						<span class="dot"></span>
+						<span id="statusText">Auto update</span>
+					</span>
+				</div>
+				<iframe id="previewFrame" title="Live preview" sandbox="allow-same-origin allow-scripts"></iframe>
+			</section>
+		</div>
+	</main>
+
+	<script src="/node_modules/monaco-editor/min/vs/loader.js"></script>
 	<script>
-		// グローバル変数
-		let editors = new Map();
-		let files = new Map();
-		let fileTree = new Map();
-		let expandedFolders = new Set();
-		let activeFileId = null;
-		let fileIdCounter = 0;
-		let githubConfig = { token: '', repo: '', branch: 'main' };
-		let fileHandles = new Map();
-		let currentPanel = 'files';
-		let db = null;
-		let searchResultsData = [];
+		const defaultContent = {
+			html: `\n<div class="card">\n  <h1>Baram Playground</h1>\n  <p>Edit HTML, CSS, and JS. CSS updates can hot reload without resetting JS.</p>\n  <button class="pulse">Try me</button>\n  <div class="count">Clicks: <span id="count">0</span></div>\n</div>\n`,
+			css: `\n* {\n  box-sizing: border-box;\n}\n\nbody {\n  margin: 0;\n  font-family: "Space Grotesk", sans-serif;\n  background: radial-gradient(circle at top, #fff, #f3f1ec 60%);\n  color: #1d1b16;\n  min-height: 100vh;\n  display: grid;\n  place-items: center;\n  padding: 32px;\n}\n\n.card {\n  background: #ffffff;\n  border: 1px solid #e0d7c9;\n  border-radius: 20px;\n  padding: 28px 32px;\n  width: min(520px, 92vw);\n  box-shadow: 0 24px 40px -28px rgba(30, 24, 15, 0.5);\n}\n\n.card h1 {\n  margin-top: 0;\n  font-size: 2.1rem;\n}\n\n.card p {\n  color: #5a5145;\n}\n\n.pulse {\n  margin-top: 16px;\n  border: none;\n  border-radius: 999px;\n  padding: 12px 18px;\n  font-weight: 600;\n  cursor: pointer;\n  background: #0b7a75;\n  color: #fff;\n  box-shadow: 0 16px 30px -20px rgba(11, 122, 117, 0.8);\n  transition: transform 0.2s ease;\n}\n\n.pulse:hover {\n  transform: translateY(-2px);\n}\n\n.count {\n  margin-top: 18px;\n  font-weight: 600;\n}\n`,
+			js: `\nconst button = document.querySelector('.pulse');\nconst counter = document.querySelector('#count');\nlet value = 0;\n\nbutton?.addEventListener('click', () => {\n  value += 1;\n  if (counter) counter.textContent = String(value);\n});\n`,
+		};
 
-		// バイナリファイル拡張子リスト
-		const BINARY_EXTENSIONS = [
-			'png', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'webp',
-			'mp3', 'mp4', 'avi', 'mov', 'wav', 'flac',
-			'zip', 'rar', '7z', 'tar', 'gz',
-			'exe', 'dll', 'so', 'dylib',
-			'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
-			'bin', 'dat', 'db'
-		];
+		const DB_KEY = "baram-projects-v1";
+		const LEGACY_KEY = "baram-playground";
 
-		// IndexedDB初期化
-		function initDB() {
-			return new Promise((resolve, reject) => {
-				const request = indexedDB.open('BaramCodeDB', 1);
+		function loadDb() {
+			try {
+				const raw = localStorage.getItem(DB_KEY);
+				return raw ? JSON.parse(raw) : { projects: {}, lastProjectId: null };
+			} catch (error) {
+				return { projects: {}, lastProjectId: null };
+			}
+		}
 
-				request.onerror = () => reject(request.error);
-				request.onsuccess = () => {
-					db = request.result;
-					resolve(db);
-				};
+		function saveDb(db) {
+			localStorage.setItem(DB_KEY, JSON.stringify(db));
+		}
 
-				request.onupgradeneeded = (event) => {
-					const db = event.target.result;
-					if (!db.objectStoreNames.contains('repositories')) {
-						db.createObjectStore('repositories', { keyPath: 'id', autoIncrement: true });
+		function createId() {
+			if (window.crypto?.randomUUID) {
+				return window.crypto.randomUUID();
+			}
+			return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+		}
+
+		function createProject(name) {
+			const now = new Date().toISOString();
+			const htmlFile = { id: createId(), name: "index.html", content: defaultContent.html };
+			const cssFile = { id: createId(), name: "styles.css", content: defaultContent.css };
+			const jsFile = { id: createId(), name: "app.js", content: defaultContent.js };
+
+			return {
+				id: createId(),
+				name: name || "Baram Live Preview",
+				createdAt: now,
+				updatedAt: now,
+				files: {
+					html: [htmlFile],
+					css: [cssFile],
+					js: [jsFile],
+				},
+				active: {
+					html: htmlFile.id,
+					css: cssFile.id,
+					js: jsFile.id,
+				},
+				settings: {
+					autoUpdate: true,
+					cssHot: true,
+					previewLayout: "right",
+					editorLayout: "block",
+					filesCollapsed: false,
+					groupCollapsed: { html: false, css: false, js: false },
+					editorSizes: { block: {}, flex: {} },
+					previewSize: { right: null, bottom: null },
+				},
+			};
+		}
+
+		function migrateLegacy(db) {
+			if (db && Object.keys(db.projects || {}).length) return db;
+			const legacyRaw = localStorage.getItem(LEGACY_KEY);
+			if (!legacyRaw) return db;
+			try {
+				const legacy = JSON.parse(legacyRaw);
+				const project = createProject("Baram Live Preview");
+				project.files.html[0].content = legacy.html || defaultContent.html;
+				project.files.css[0].content = legacy.css || defaultContent.css;
+				project.files.js[0].content = legacy.js || defaultContent.js;
+				project.files.css[0].name = legacy.cssName || project.files.css[0].name;
+				project.files.js[0].name = legacy.jsName || project.files.js[0].name;
+				project.settings.autoUpdate = legacy.autoUpdate ?? true;
+				project.settings.cssHot = legacy.cssHot ?? true;
+				project.settings.previewLayout = legacy.layout || "right";
+				db.projects[project.id] = project;
+				db.lastProjectId = project.id;
+				saveDb(db);
+				return db;
+			} catch (error) {
+				return db;
+			}
+		}
+
+		function sanitizeText(input, type) {
+			if (type === "script") {
+				return input.replace(/\<\/script/gi, "<\\/script");
+			}
+			return input.replace(/\<\/style/gi, "<\\/style");
+		}
+
+		const styleClose = "</sty" + "le>";
+		const scriptClose = "</scr" + "ipt>";
+
+		function escapeAttribute(input) {
+			return input.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+		}
+
+		function ensureActiveFile(project, type) {
+			const files = project.files[type];
+			if (!files.length) return null;
+			if (!files.find((file) => file.id === project.active[type])) {
+				project.active[type] = files[0].id;
+			}
+			return files.find((file) => file.id === project.active[type]);
+		}
+
+		function ensureEditorSettings(project) {
+			project.settings = project.settings || {};
+			project.settings.editorSizes = project.settings.editorSizes || { block: {}, flex: {} };
+			project.settings.previewSize = project.settings.previewSize || { right: null, bottom: null };
+		}
+
+		const db = migrateLegacy(loadDb());
+		const params = new URLSearchParams(window.location.search);
+		let projectId = params.get("id") || db.lastProjectId;
+		let project = projectId ? db.projects[projectId] : null;
+
+		if (!project) {
+			project = createProject("Baram Live Preview");
+			db.projects[project.id] = project;
+			projectId = project.id;
+		}
+
+		db.lastProjectId = project.id;
+		saveDb(db);
+
+		if (project.id !== params.get("id")) {
+			params.set("id", project.id);
+			const nextUrl = `${window.location.pathname}?${params.toString()}`;
+			window.history.replaceState({}, "", nextUrl);
+		}
+
+		ensureActiveFile(project, "html");
+		ensureActiveFile(project, "css");
+		ensureActiveFile(project, "js");
+		ensureEditorSettings(project);
+
+		const projectNameInput = document.getElementById("projectName");
+		const autoUpdateInput = document.getElementById("autoUpdate");
+		const cssHotInput = document.getElementById("cssHot");
+		const runBtn = document.getElementById("runBtn");
+		const openTabBtn = document.getElementById("openTabBtn");
+		const downloadBtn = document.getElementById("downloadBtn");
+		const backBtn = document.getElementById("backBtn");
+		const previewFrame = document.getElementById("previewFrame");
+		const previewStatus = document.getElementById("statusText");
+		const workspace = document.getElementById("workspace");
+		const editorsPane = document.getElementById("editorsPane");
+		const previewPane = document.getElementById("previewPane");
+		const previewResize = document.getElementById("previewResize");
+		const mainPane = document.querySelector(".main-pane");
+		const toggleFilesBtn = document.getElementById("toggleFilesBtn");
+		const toggleFilesPanelBtn = document.getElementById("toggleFilesPanel");
+		const htmlNameInput = document.getElementById("htmlName");
+		const cssNameInput = document.getElementById("cssName");
+		const jsNameInput = document.getElementById("jsName");
+		const editorOrder = ["html", "css", "js"];
+		const editorPanels = {
+			html: document.querySelector('.editor-panel[data-editor="html"]'),
+			css: document.querySelector('.editor-panel[data-editor="css"]'),
+			js: document.querySelector('.editor-panel[data-editor="js"]'),
+		};
+
+		const previewLayoutButtons = Array.from(document.querySelectorAll("#previewLayout button"));
+		const editorLayoutButtons = Array.from(document.querySelectorAll("#editorLayout button"));
+		const resizeHandles = Array.from(document.querySelectorAll(".resize-handle"));
+		const groupToggles = Array.from(document.querySelectorAll(".group-toggle"));
+		const addFileButtons = Array.from(document.querySelectorAll(".add-file"));
+
+		const fileLists = {
+			html: document.getElementById("fileListHtml"),
+			css: document.getElementById("fileListCss"),
+			js: document.getElementById("fileListJs"),
+		};
+
+		projectNameInput.value = project.name || "Baram Live Preview";
+		document.title = projectNameInput.value;
+
+		autoUpdateInput.checked = project.settings?.autoUpdate ?? true;
+		cssHotInput.checked = project.settings?.cssHot ?? true;
+
+		let previewWindow = null;
+		let changePending = false;
+		let cssPending = false;
+		let isSwitching = false;
+		const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+
+		function saveProject() {
+			project.updatedAt = new Date().toISOString();
+			db.projects[project.id] = project;
+			db.lastProjectId = project.id;
+			saveDb(db);
+		}
+
+		function scheduleSave() {
+			if (scheduleSave.timer) clearTimeout(scheduleSave.timer);
+			scheduleSave.timer = setTimeout(saveProject, 300);
+		}
+
+		function updateStatus() {
+			if (workspace.classList.contains("layout-hide")) {
+				previewStatus.textContent = "Preview hidden";
+				return;
+			}
+			if (autoUpdateInput.checked) {
+				previewStatus.textContent = "Auto update";
+			} else if (changePending) {
+				previewStatus.textContent = "Manual update needed";
+			} else {
+				previewStatus.textContent = "Manual mode";
+			}
+		}
+
+		function buildDocument() {
+			const htmlFile = ensureActiveFile(project, "html");
+			const html = htmlFile ? htmlFile.content : "";
+
+			const cssBlocks = project.files.css
+				.map((file) => {
+					const css = sanitizeText(file.content || "", "style");
+					return `<style data-file-id="${file.id}" data-filename="${escapeAttribute(file.name)}">${css}${styleClose}`;
+				})
+				.join("\n");
+
+			const jsBlocks = project.files.js
+				.map((file) => {
+					const js = sanitizeText(file.content || "", "script");
+					return `<script data-file-id="${file.id}" data-filename="${escapeAttribute(file.name)}">${js}${scriptClose}`;
+				})
+				.join("\n");
+
+			return [
+				"\<!doctype html\>",
+				"\<html lang=\"en\"\>",
+				"  <head>",
+				"    \<meta charset=\"utf-8\" \/\>",
+				"    \<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" \/\>",
+				"    \<title\>Preview\<\/title\>",
+				`    ${cssBlocks}`,
+				"  \<\/head\>",
+				"  \<body\>",
+				html,
+				`    ${jsBlocks}`,
+				"  \<\/body\>",
+				"\<\/html\>",
+			].join("\n");
+		}
+
+		function renderPreview() {
+			const doc = buildDocument();
+			previewFrame.srcdoc = doc;
+			if (previewWindow && !previewWindow.closed) {
+				previewWindow.document.open();
+				previewWindow.document.write(doc);
+				previewWindow.document.close();
+			}
+			changePending = false;
+			updateStatus();
+		}
+
+		function updateCssOnly(fileId) {
+			const file = project.files.css.find((item) => item.id === fileId);
+			if (!file) return;
+
+			const updateDoc = (doc) => {
+				if (!doc) return;
+				const styleTag = doc.querySelector(`style[data-file-id="${fileId}"]`);
+				if (styleTag) {
+					styleTag.textContent = file.content;
+					styleTag.setAttribute("data-filename", file.name);
+				}
+			};
+
+			updateDoc(previewFrame.contentDocument);
+			if (previewWindow && !previewWindow.closed) {
+				updateDoc(previewWindow.document);
+			}
+		}
+
+		function schedulePreviewUpdate() {
+			changePending = true;
+			updateStatus();
+			if (!autoUpdateInput.checked) return;
+			if (schedulePreviewUpdate.timer) clearTimeout(schedulePreviewUpdate.timer);
+			schedulePreviewUpdate.timer = setTimeout(renderPreview, 250);
+		}
+
+		function scheduleCssUpdate(fileId) {
+			cssPending = true;
+			if (!cssHotInput.checked) return;
+			if (scheduleCssUpdate.timer) clearTimeout(scheduleCssUpdate.timer);
+			scheduleCssUpdate.timer = setTimeout(() => {
+				updateCssOnly(fileId);
+				cssPending = false;
+			}, 120);
+		}
+
+		function updatePreviewLayoutButtons(layout) {
+			previewLayoutButtons.forEach((btn) => {
+				btn.classList.toggle("is-active", btn.dataset.layout === layout);
+			});
+		}
+
+		function updateEditorLayoutLock() {
+			const lock = getActivePreviewLayout() !== "hide";
+			editorLayoutButtons.forEach((btn) => {
+				btn.classList.toggle("is-locked", lock);
+				btn.disabled = lock;
+				btn.setAttribute("aria-disabled", lock ? "true" : "false");
+			});
+		}
+
+		function getForcedEditorLayout(previewLayout) {
+			if (previewLayout === "right") return "block";
+			if (previewLayout === "bottom") return "flex";
+			return null;
+		}
+
+		function applyEditorLayout(layout) {
+			editorsPane.classList.toggle("editors-block", layout === "block");
+			editorsPane.classList.toggle("editors-flex", layout === "flex");
+			editorLayoutButtons.forEach((btn) => {
+				btn.classList.toggle("is-active", btn.dataset.layout === layout);
+			});
+			applyEditorSizes();
+			updateResizeHandles();
+		}
+
+		function setPreviewLayout(layout) {
+			workspace.classList.toggle("layout-right", layout === "right");
+			workspace.classList.toggle("layout-bottom", layout === "bottom");
+			workspace.classList.toggle("layout-hide", layout === "hide");
+			updatePreviewLayoutButtons(layout);
+			project.settings.previewLayout = layout;
+			updateStatus();
+			const forcedLayout = getForcedEditorLayout(layout);
+			if (forcedLayout) {
+				applyEditorLayout(forcedLayout);
+			} else {
+				applyEditorLayout(project.settings.editorLayout || "block");
+			}
+			applyPreviewSize();
+			updateEditorLayoutLock();
+			scheduleSave();
+		}
+
+		function getActivePreviewLayout() {
+			if (workspace.classList.contains("layout-hide")) return "hide";
+			if (workspace.classList.contains("layout-bottom")) return "bottom";
+			return "right";
+		}
+
+		function applyPreviewSize() {
+			if (!previewPane) return;
+			const layout = getActivePreviewLayout();
+			if (layout === "hide") {
+				previewPane.style.flexBasis = "";
+				return;
+			}
+			const size = project.settings.previewSize?.[layout];
+			previewPane.style.flexBasis = size ? `${size}px` : "";
+		}
+
+		function savePreviewSize(size) {
+			const layout = getActivePreviewLayout();
+			if (layout === "hide") return;
+			project.settings.previewSize = project.settings.previewSize || { right: null, bottom: null };
+			project.settings.previewSize[layout] = size;
+			scheduleSave();
+		}
+
+		function startPreviewResize(event) {
+			if (!previewPane || !mainPane) return;
+			const layout = getActivePreviewLayout();
+			if (layout === "hide") return;
+			const axis = layout === "bottom" ? "y" : "x";
+			const handle = event.currentTarget;
+			const startPoint = axis === "x" ? event.clientX : event.clientY;
+			const previewRect = previewPane.getBoundingClientRect();
+			const mainRect = mainPane.getBoundingClientRect();
+			const startPreview = axis === "x" ? previewRect.width : previewRect.height;
+			const total = axis === "x" ? mainRect.width : mainRect.height;
+			const minPreview = 220;
+			const minEditors = 280;
+
+			if (previewResize) previewResize.classList.add("is-dragging");
+			const previousPointerEvents = previewFrame?.style.pointerEvents || "";
+			if (previewFrame) previewFrame.style.pointerEvents = "none";
+			if (handle?.setPointerCapture && event.pointerId !== undefined) {
+				handle.setPointerCapture(event.pointerId);
+			}
+
+			function onMove(moveEvent) {
+				const current = axis === "x" ? moveEvent.clientX : moveEvent.clientY;
+				const delta = current - startPoint;
+				let next = startPreview - delta;
+				const maxPreview = total - minEditors;
+				next = Math.max(minPreview, Math.min(maxPreview, next));
+				previewPane.style.flexBasis = `${Math.round(next)}px`;
+			}
+
+			function onUp() {
+				document.body.style.cursor = "";
+				window.removeEventListener("pointermove", onMove);
+				window.removeEventListener("pointerup", onUp);
+				window.removeEventListener("pointercancel", onUp);
+				window.removeEventListener("blur", onUp);
+				if (previewResize) previewResize.classList.remove("is-dragging");
+				if (previewFrame) previewFrame.style.pointerEvents = previousPointerEvents;
+				if (handle?.releasePointerCapture && event.pointerId !== undefined) {
+					try {
+						handle.releasePointerCapture(event.pointerId);
+					} catch (error) {
+						// Ignore if capture was lost.
 					}
-				};
+				}
+				const rect = previewPane.getBoundingClientRect();
+				const finalSize = axis === "x" ? rect.width : rect.height;
+				savePreviewSize(Math.round(finalSize));
+			}
+
+			document.body.style.cursor = axis === "x" ? "col-resize" : "row-resize";
+			window.addEventListener("pointermove", onMove);
+			window.addEventListener("pointerup", onUp);
+			window.addEventListener("pointercancel", onUp);
+			window.addEventListener("blur", onUp);
+		}
+
+		function setEditorLayout(layout) {
+			if (getActivePreviewLayout() !== "hide") return;
+			applyEditorLayout(layout);
+			project.settings.editorLayout = layout;
+			scheduleSave();
+		}
+
+		function getEditorDirection() {
+			return window.getComputedStyle(editorsPane).flexDirection;
+		}
+
+		function applyEditorSizes() {
+			const layout = editorsPane.classList.contains("editors-flex") ? "flex" : "block";
+			const direction = getEditorDirection();
+			const allow = layout === "flex" ? direction === "row" : true;
+			const sizes = project.settings.editorSizes?.[layout] || {};
+			editorOrder.forEach((type) => {
+				const panel = editorPanels[type];
+				if (!panel) return;
+				if (!allow) {
+					panel.style.flexBasis = "";
+					return;
+				}
+				if (sizes[type]) {
+					panel.style.flexBasis = `${sizes[type]}px`;
+				} else {
+					panel.style.flexBasis = "";
+				}
 			});
 		}
 
-		// リポジトリ保存
-		async function saveRepository(repoData) {
-			return new Promise((resolve, reject) => {
-				const transaction = db.transaction(['repositories'], 'readwrite');
-				const store = transaction.objectStore('repositories');
-				const request = store.add(repoData);
+		function captureEditorSizes() {
+			const layout = editorsPane.classList.contains("editors-flex") ? "flex" : "block";
+			const direction = getEditorDirection();
+			const allow = layout === "flex" ? direction === "row" : true;
+			if (!allow) return;
+			const sizes = project.settings.editorSizes?.[layout] || {};
+			editorOrder.forEach((type) => {
+				const panel = editorPanels[type];
+				if (!panel) return;
+				const rect = panel.getBoundingClientRect();
+				const value = direction === "row" ? rect.width : rect.height;
+				sizes[type] = Math.max(120, Math.round(value));
+			});
+			project.settings.editorSizes = project.settings.editorSizes || { block: {}, flex: {} };
+			project.settings.editorSizes[layout] = sizes;
+			scheduleSave();
+		}
 
-				request.onsuccess = () => resolve(request.result);
-				request.onerror = () => reject(request.error);
+		function updateResizeHandles() {
+			const direction = getEditorDirection();
+			const hideForDirection = editorsPane.classList.contains("editors-flex") && direction === "column";
+			resizeHandles.forEach((handle) => {
+				const prevKey = handle.dataset.after;
+				const prevIndex = editorOrder.indexOf(prevKey);
+				const nextKey = editorOrder[prevIndex + 1];
+				const prevPanel = editorPanels[prevKey];
+				const nextPanel = editorPanels[nextKey];
+				if (!prevPanel || !nextPanel) return;
+				handle.style.display = hideForDirection ? "none" : "";
 			});
 		}
 
-		// リポジトリ一覧取得
-		async function getRepositories() {
-			return new Promise((resolve, reject) => {
-				const transaction = db.transaction(['repositories'], 'readonly');
-				const store = transaction.objectStore('repositories');
-				const request = store.getAll();
+		function startResize(handle, event) {
+			const layout = editorsPane.classList.contains("editors-flex") ? "flex" : "block";
+			const direction = getEditorDirection();
+			const axis = direction === "row" ? "x" : "y";
+			if (layout === "flex" && direction === "column") return;
+			const prevKey = handle.dataset.after;
+			const prevIndex = editorOrder.indexOf(prevKey);
+			const nextKey = editorOrder[prevIndex + 1];
+			const prevPanel = editorPanels[prevKey];
+			const nextPanel = editorPanels[nextKey];
+			if (!prevPanel || !nextPanel) return;
 
-				request.onsuccess = () => resolve(request.result);
-				request.onerror = () => reject(request.error);
+			const startPoint = axis === "x" ? event.clientX : event.clientY;
+			const prevRect = prevPanel.getBoundingClientRect();
+			const nextRect = nextPanel.getBoundingClientRect();
+			const startPrev = axis === "x" ? prevRect.width : prevRect.height;
+			const startNext = axis === "x" ? nextRect.width : nextRect.height;
+			const minSize = 140;
+
+			function onMove(moveEvent) {
+				const current = axis === "x" ? moveEvent.clientX : moveEvent.clientY;
+				const delta = current - startPoint;
+				const nextPrev = startPrev + delta;
+				const nextNext = startNext - delta;
+				if (nextPrev < minSize || nextNext < minSize) return;
+				prevPanel.style.flexBasis = `${nextPrev}px`;
+				nextPanel.style.flexBasis = `${nextNext}px`;
+			}
+
+			function onUp() {
+				document.body.style.cursor = "";
+				window.removeEventListener("pointermove", onMove);
+				window.removeEventListener("pointerup", onUp);
+				captureEditorSizes();
+			}
+
+			document.body.style.cursor = axis === "x" ? "col-resize" : "row-resize";
+			window.addEventListener("pointermove", onMove);
+			window.addEventListener("pointerup", onUp);
+		}
+
+		function setFilesCollapsed(collapsed) {
+			workspace.classList.toggle("files-collapsed", collapsed);
+			if (toggleFilesBtn) {
+				toggleFilesBtn.textContent = collapsed ? "Show Files" : "Hide Files";
+			}
+			if (toggleFilesPanelBtn) {
+				toggleFilesPanelBtn.textContent = collapsed ? "Expand" : "Collapse";
+			}
+			project.settings.filesCollapsed = collapsed;
+			scheduleSave();
+		}
+
+		function setGroupCollapsed(type, collapsed) {
+			const group = document.querySelector(`.file-group[data-type="${type}"]`);
+			if (!group) return;
+			group.classList.toggle("group-collapsed", collapsed);
+			project.settings.groupCollapsed[type] = collapsed;
+			scheduleSave();
+		}
+
+		function getActiveFile(type) {
+			return ensureActiveFile(project, type);
+		}
+
+		function saveActiveFile(type) {
+			const file = getActiveFile(type);
+			if (!file) return;
+			if (type === "html") file.content = htmlEditor.getValue();
+			if (type === "css") file.content = cssEditor.getValue();
+			if (type === "js") file.content = jsEditor.getValue();
+		}
+
+		function setActiveFile(type, id) {
+			if (project.active[type] === id) return;
+			saveActiveFile(type);
+			project.active[type] = id;
+			const file = getActiveFile(type);
+			if (!file) return;
+			isSwitching = true;
+			if (type === "html") htmlEditor.setValue(file.content || "");
+			if (type === "css") cssEditor.setValue(file.content || "");
+			if (type === "js") jsEditor.setValue(file.content || "");
+			isSwitching = false;
+			updateFileNameInputs();
+			renderFileList(type);
+			schedulePreviewUpdate();
+			scheduleSave();
+		}
+
+		function makeUniqueName(type, name, ignoreId) {
+			const cleaned = name.trim();
+			if (!cleaned) return name;
+			const existing = project.files[type]
+				.filter((file) => file.id !== ignoreId)
+				.map((file) => file.name.toLowerCase());
+			if (!existing.includes(cleaned.toLowerCase())) return cleaned;
+
+			const parts = cleaned.split(".");
+			const ext = parts.length > 1 ? parts.pop() : "";
+			const base = parts.join(".");
+			let index = 2;
+			let candidate = ext ? `${base}-${index}.${ext}` : `${base}-${index}`;
+			while (existing.includes(candidate.toLowerCase())) {
+				index += 1;
+				candidate = ext ? `${base}-${index}.${ext}` : `${base}-${index}`;
+			}
+			return candidate;
+		}
+
+		function renameActiveFile(type, nextName) {
+			const file = getActiveFile(type);
+			if (!file) return;
+			const trimmed = nextName.trim();
+			if (!trimmed) {
+				updateFileNameInputs();
+				return;
+			}
+			const unique = makeUniqueName(type, trimmed, file.id);
+			file.name = unique;
+			updateFileNameInputs();
+			renderFileList(type);
+			schedulePreviewUpdate();
+			scheduleSave();
+		}
+
+		function updateFileNameInputs() {
+			const htmlFile = getActiveFile("html");
+			const cssFile = getActiveFile("css");
+			const jsFile = getActiveFile("js");
+			if (htmlFile) htmlNameInput.value = htmlFile.name;
+			if (cssFile) cssNameInput.value = cssFile.name;
+			if (jsFile) jsNameInput.value = jsFile.name;
+		}
+
+		function canDeleteFile(type) {
+			return project.files[type].length > 1;
+		}
+
+		function deleteFile(type, id) {
+			if (!canDeleteFile(type)) return;
+			const fileIndex = project.files[type].findIndex((file) => file.id === id);
+			if (fileIndex === -1) return;
+			const target = project.files[type][fileIndex];
+			const ok = window.confirm(`Delete ${target.name}?`);
+			if (!ok) return;
+			project.files[type].splice(fileIndex, 1);
+			if (project.active[type] === id) {
+				const nextFile = project.files[type][Math.max(0, fileIndex - 1)] || project.files[type][0];
+				project.active[type] = nextFile.id;
+				isSwitching = true;
+				if (type === "html") htmlEditor.setValue(nextFile.content || "");
+				if (type === "css") cssEditor.setValue(nextFile.content || "");
+				if (type === "js") jsEditor.setValue(nextFile.content || "");
+				isSwitching = false;
+			}
+			renderFileList(type);
+			updateFileNameInputs();
+			schedulePreviewUpdate();
+			scheduleSave();
+		}
+
+		function renderFileList(type) {
+			const list = fileLists[type];
+			if (!list) return;
+			list.innerHTML = "";
+			const allowDelete = canDeleteFile(type);
+			project.files[type].forEach((file) => {
+				const item = document.createElement("div");
+				item.className = `file-item${file.id === project.active[type] ? " is-active" : ""}`;
+
+				const selectBtn = document.createElement("button");
+				selectBtn.className = "file-select";
+				selectBtn.type = "button";
+				selectBtn.innerHTML = `<span class="file-dot"></span><span class="file-name"></span>`;
+				selectBtn.querySelector(".file-name").textContent = file.name;
+				selectBtn.addEventListener("click", () => setActiveFile(type, file.id));
+
+				const deleteBtn = document.createElement("button");
+				deleteBtn.className = "file-delete";
+				deleteBtn.type = "button";
+				deleteBtn.textContent = "×";
+				deleteBtn.disabled = !allowDelete;
+				deleteBtn.title = allowDelete ? "Delete file" : "At least one file is required";
+				deleteBtn.addEventListener("click", (event) => {
+					event.stopPropagation();
+					deleteFile(type, file.id);
+				});
+
+				item.appendChild(selectBtn);
+				item.appendChild(deleteBtn);
+				list.appendChild(item);
 			});
 		}
 
-		// リポジトリ削除
-		async function deleteRepository(id) {
-			return new Promise((resolve, reject) => {
-				const transaction = db.transaction(['repositories'], 'readwrite');
-				const store = transaction.objectStore('repositories');
-				const request = store.delete(id);
-
-				request.onsuccess = () => resolve();
-				request.onerror = () => reject(request.error);
-			});
+		function renderAllFileLists() {
+			renderFileList("html");
+			renderFileList("css");
+			renderFileList("js");
 		}
 
-		// Monaco Editorの初期化
-		require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+		function addFile(type) {
+			const baseName =
+				type === "html" ? "page.html" : type === "css" ? "styles.css" : "script.js";
+			const uniqueName = makeUniqueName(type, baseName);
+			const file = {
+				id: createId(),
+				name: uniqueName,
+				content: "\n",
+			};
+			project.files[type].push(file);
+			project.active[type] = file.id;
+			renderFileList(type);
+			setActiveFile(type, file.id);
+			scheduleSave();
+		}
 
-		require(['vs/editor/editor.main'], async function () {
-			await initDB();
-			initializeApp();
+		function sanitizeFileName(name) {
+			return name.replace(/[^a-z0-9\-_]+/gi, "-").replace(/^-+|-+$/g, "") || "project";
+		}
+
+		function getDosTime(date) {
+			return (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+		}
+
+		function getDosDate(date) {
+			return ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+		}
+
+		const crcTable = (() => {
+			const table = new Uint32Array(256);
+			for (let i = 0; i < 256; i += 1) {
+				let value = i;
+				for (let j = 0; j < 8; j += 1) {
+					value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
+				}
+				table[i] = value >>> 0;
+			}
+			return table;
+		})();
+
+		function crc32(buffer) {
+			let crc = 0xffffffff;
+			for (let i = 0; i < buffer.length; i += 1) {
+				crc = (crc >>> 8) ^ crcTable[(crc ^ buffer[i]) & 0xff];
+			}
+			return (crc ^ 0xffffffff) >>> 0;
+		}
+
+		function createZipBlob(entries) {
+			const encoder = new TextEncoder();
+			const date = new Date();
+			const dosTime = getDosTime(date);
+			const dosDate = getDosDate(date);
+
+			let offset = 0;
+			const localParts = [];
+			const centralParts = [];
+
+			entries.forEach((entry) => {
+				const nameBytes = encoder.encode(entry.name);
+				const dataBytes = encoder.encode(entry.content || "");
+				const crc = crc32(dataBytes);
+
+				const localHeader = new Uint8Array(30 + nameBytes.length);
+				const localView = new DataView(localHeader.buffer);
+				localView.setUint32(0, 0x04034b50, true);
+				localView.setUint16(4, 20, true);
+				localView.setUint16(6, 0, true);
+				localView.setUint16(8, 0, true);
+				localView.setUint16(10, dosTime, true);
+				localView.setUint16(12, dosDate, true);
+				localView.setUint32(14, crc, true);
+				localView.setUint32(18, dataBytes.length, true);
+				localView.setUint32(22, dataBytes.length, true);
+				localView.setUint16(26, nameBytes.length, true);
+				localView.setUint16(28, 0, true);
+				localHeader.set(nameBytes, 30);
+
+				localParts.push(localHeader, dataBytes);
+
+				const centralHeader = new Uint8Array(46 + nameBytes.length);
+				const centralView = new DataView(centralHeader.buffer);
+				centralView.setUint32(0, 0x02014b50, true);
+				centralView.setUint16(4, 20, true);
+				centralView.setUint16(6, 20, true);
+				centralView.setUint16(8, 0, true);
+				centralView.setUint16(10, 0, true);
+				centralView.setUint16(12, dosTime, true);
+				centralView.setUint16(14, dosDate, true);
+				centralView.setUint32(16, crc, true);
+				centralView.setUint32(20, dataBytes.length, true);
+				centralView.setUint32(24, dataBytes.length, true);
+				centralView.setUint16(28, nameBytes.length, true);
+				centralView.setUint16(30, 0, true);
+				centralView.setUint16(32, 0, true);
+				centralView.setUint16(34, 0, true);
+				centralView.setUint16(36, 0, true);
+				centralView.setUint32(38, 0, true);
+				centralView.setUint32(42, offset, true);
+				centralHeader.set(nameBytes, 46);
+				centralParts.push(centralHeader);
+
+				offset += localHeader.length + dataBytes.length;
+			});
+
+			const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+			const centralOffset = offset;
+
+			const endRecord = new Uint8Array(22);
+			const endView = new DataView(endRecord.buffer);
+			endView.setUint32(0, 0x06054b50, true);
+			endView.setUint16(4, 0, true);
+			endView.setUint16(6, 0, true);
+			endView.setUint16(8, entries.length, true);
+			endView.setUint16(10, entries.length, true);
+			endView.setUint32(12, centralSize, true);
+			endView.setUint32(16, centralOffset, true);
+			endView.setUint16(20, 0, true);
+
+			return new Blob([...localParts, ...centralParts, endRecord], { type: "application/zip" });
+		}
+
+		function downloadZip() {
+			const files = [
+				...project.files.html,
+				...project.files.css,
+				...project.files.js,
+			].map((file) => ({ name: file.name, content: file.content }));
+
+			const blob = createZipBlob(files);
+			const link = document.createElement("a");
+			link.href = URL.createObjectURL(blob);
+			link.download = `${sanitizeFileName(project.name)}.zip`;
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+			setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+		}
+
+		let htmlEditor;
+		let cssEditor;
+		let jsEditor;
+
+		window.require.config({ paths: { vs: "/node_modules/monaco-editor/min/vs" } });
+		window.require(["vs/editor/editor.main"], () => {
+			monaco.editor.defineTheme("baramLight", {
+				base: "vs",
+				inherit: true,
+				rules: [
+					{ token: "comment", foreground: "8a7f72" },
+					{ token: "keyword", foreground: "0b7a75" },
+					{ token: "string", foreground: "7b5a3b" },
+				],
+				colors: {
+					"editor.background": "#fffdf9",
+					"editorLineNumber.foreground": "#b3a99b",
+					"editor.lineHighlightBackground": "#f7f2ea",
+					"editor.selectionBackground": "#d3efe8",
+				},
+			});
+
+			monaco.editor.defineTheme("baramDark", {
+				base: "vs-dark",
+				inherit: true,
+				rules: [
+					{ token: "comment", foreground: "8f867a" },
+					{ token: "keyword", foreground: "4cc9b0" },
+					{ token: "string", foreground: "d0a875" },
+				],
+				colors: {
+					"editor.background": "#1b1712",
+					"editorLineNumber.foreground": "#6f6558",
+					"editor.lineHighlightBackground": "#242019",
+					"editor.selectionBackground": "#2b4c46",
+				},
+			});
+
+			const common = {
+				theme: themeMedia.matches ? "baramDark" : "baramLight",
+				fontFamily: "JetBrains Mono, ui-monospace, monospace",
+				fontSize: 13,
+				minimap: { enabled: false },
+				automaticLayout: true,
+				scrollBeyondLastLine: false,
+			};
+
+			const htmlFile = getActiveFile("html");
+			const cssFile = getActiveFile("css");
+			const jsFile = getActiveFile("js");
+
+			htmlEditor = monaco.editor.create(document.getElementById("editor-html"), {
+				value: htmlFile?.content || "",
+				language: "html",
+				...common,
+			});
+
+			cssEditor = monaco.editor.create(document.getElementById("editor-css"), {
+				value: cssFile?.content || "",
+				language: "css",
+				...common,
+			});
+
+			jsEditor = monaco.editor.create(document.getElementById("editor-js"), {
+				value: jsFile?.content || "",
+				language: "javascript",
+				...common,
+			});
+
+			htmlEditor.onDidChangeModelContent(() => {
+				if (isSwitching) return;
+				const file = getActiveFile("html");
+				if (file) file.content = htmlEditor.getValue();
+				schedulePreviewUpdate();
+				scheduleSave();
+			});
+
+			cssEditor.onDidChangeModelContent(() => {
+				if (isSwitching) return;
+				const file = getActiveFile("css");
+				if (file) file.content = cssEditor.getValue();
+				scheduleCssUpdate(project.active.css);
+				schedulePreviewUpdate();
+				scheduleSave();
+			});
+
+			jsEditor.onDidChangeModelContent(() => {
+				if (isSwitching) return;
+				const file = getActiveFile("js");
+				if (file) file.content = jsEditor.getValue();
+				schedulePreviewUpdate();
+				scheduleSave();
+			});
+
+			renderAllFileLists();
+			updateFileNameInputs();
+			renderPreview();
+			updateStatus();
+
+			if (themeMedia.addEventListener) {
+				themeMedia.addEventListener("change", (event) => {
+					monaco.editor.setTheme(event.matches ? "baramDark" : "baramLight");
+				});
+			} else if (themeMedia.addListener) {
+				themeMedia.addListener((event) => {
+					monaco.editor.setTheme(event.matches ? "baramDark" : "baramLight");
+				});
+			}
 		});
 
-		function initializeApp() {
-			setupNavigation();
-			setupKeyboardShortcuts();
-			setupMenus();
-			loadRepositories();
-		}
-
-		// メニュー設定
-		function setupMenus() {
-			const menus = ['file-menu', 'edit-menu', 'view-menu'];
-
-			menus.forEach(menuId => {
-				const menu = document.getElementById(menuId);
-				const dropdown = menu.querySelector('.dropdown-menu');
-
-				menu.addEventListener('click', (e) => {
-					e.stopPropagation();
-
-					// 他のメニューを閉じる
-					document.querySelectorAll('.dropdown-menu').forEach(d => {
-						if (d !== dropdown) d.classList.remove('show');
-					});
-
-					dropdown.classList.toggle('show');
-				});
-			});
-
-			// 外側クリックでメニューを閉じる
-			document.addEventListener('click', () => {
-				document.querySelectorAll('.dropdown-menu').forEach(d => {
-					d.classList.remove('show');
-				});
-			});
-		}
-
-		// ナビゲーション設定
-		function setupNavigation() {
-			document.querySelectorAll('.nav-item').forEach(item => {
-				item.addEventListener('click', () => {
-					const panel = item.dataset.panel;
-					switchPanel(panel);
-				});
-			});
-
-			document.querySelectorAll('.search-option').forEach(option => {
-				option.addEventListener('click', () => {
-					option.classList.toggle('active');
-				});
-			});
-		}
-
-		function switchPanel(panel) {
-			currentPanel = panel;
-
-			document.querySelectorAll('.nav-item').forEach(item => {
-				item.classList.toggle('active', item.dataset.panel === panel);
-			});
-
-			document.getElementById('files-panel').style.display = panel === 'files' ? 'flex' : 'none';
-			document.getElementById('files-panel').style.flexDirection = 'column';
-			document.getElementById('search-panel').classList.toggle('active', panel === 'search');
-			document.getElementById('git-panel').classList.toggle('active', panel === 'git');
-		}
-
-		// ファイルがバイナリかチェック
-		function isBinaryFile(filename) {
-			const ext = filename.split('.').pop().toLowerCase();
-			return BINARY_EXTENSIONS.includes(ext);
-		}
-
-		// バイナリ警告を表示
-		function showBinaryWarning(fileId, filename) {
-			const container = document.getElementById('editor-container');
-			const wrapper = document.createElement('div');
-			wrapper.className = 'editor-wrapper';
-			wrapper.id = `editor-${fileId}`;
-			wrapper.innerHTML = `
-				<div class="binary-warning">
-					<div class="binary-warning-icon">⚠️</div>
-					<div class="binary-warning-title">Binary File Detected</div>
-					<div class="binary-warning-message">
-						The file "${filename}" appears to be binary and cannot be displayed in the text editor.
-					</div>
-				</div>
-			`;
-			container.appendChild(wrapper);
-		}
-
-		// ファイル開く
-		async function openFiles() {
-			try {
-				const handles = await window.showOpenFilePicker({ multiple: true });
-
-				for (const handle of handles) {
-					const file = await handle.getFile();
-					const fileId = `file-${fileIdCounter++}`;
-
-					fileHandles.set(fileId, handle);
-
-					if (isBinaryFile(file.name)) {
-						files.set(fileId, {
-							name: file.name,
-							content: '',
-							modified: false,
-							binary: true,
-							handle: handle
-						});
-
-						createTab(fileId, file.name);
-						showBinaryWarning(fileId, file.name);
-					} else {
-						const content = await file.text();
-
-						files.set(fileId, {
-							name: file.name,
-							content: content,
-							modified: false,
-							binary: false,
-							handle: handle
-						});
-
-						createTab(fileId, file.name);
-						createEditor(fileId, content, file.name);
-					}
-				}
-
-				hideWelcomeScreen();
-			} catch (err) {
-				if (err.name !== 'AbortError') {
-					showNotification('Failed to open file: ' + err.message, 'error');
-				}
-			}
-		}
-
-		// フォルダ開く
-		async function openFolder() {
-			try {
-				const dirHandle = await window.showDirectoryPicker();
-				await loadDirectory(dirHandle);
-				hideWelcomeScreen();
-			} catch (err) {
-				if (err.name !== 'AbortError') {
-					showNotification('Failed to open folder: ' + err.message, 'error');
-				}
-			}
-		}
-
-		// ディレクトリ読み込み
-		async function loadDirectory(dirHandle, parentPath = '') {
-			const path = parentPath ? `${parentPath}/${dirHandle.name}` : dirHandle.name;
-
-			fileTree.set(path, {
-				name: dirHandle.name,
-				type: 'folder',
-				children: [],
-				handle: dirHandle,
-				expanded: false
-			});
-
-			for await (const entry of dirHandle.values()) {
-				const entryPath = `${path}/${entry.name}`;
-
-				if (entry.kind === 'file') {
-					fileTree.set(entryPath, {
-						name: entry.name,
-						type: 'file',
-						handle: entry,
-						parent: path
-					});
-					fileTree.get(path).children.push(entryPath);
-				} else if (entry.kind === 'directory') {
-					await loadDirectory(entry, path);
-					fileTree.get(path).children.push(entryPath);
-				}
-			}
-
-			renderFileTree();
-		}
-
-		// ファイルツリー描画
-		function renderFileTree() {
-			const container = document.getElementById('file-tree');
-			container.innerHTML = '';
-
-			const rootFolders = Array.from(fileTree.keys()).filter(path => !path.includes('/'));
-
-			rootFolders.forEach(path => {
-				renderTreeItem(path, 0, container);
-			});
-
-			updateFileCount();
-		}
-
-		function renderTreeItem(path, level, container) {
-			const item = fileTree.get(path);
-			if (!item) return;
-
-			const div = document.createElement('div');
-			div.className = 'tree-item';
-			div.dataset.path = path;
-
-			const indent = document.createElement('span');
-			indent.className = 'tree-indent';
-			indent.style.width = `${level * 16}px`;
-			div.appendChild(indent);
-
-			if (item.type === 'folder') {
-				const arrow = document.createElement('span');
-				arrow.className = item.children.length > 0 ? 'tree-arrow' : 'tree-arrow empty';
-				arrow.textContent = '▶';
-				if (item.expanded) arrow.classList.add('expanded');
-				div.appendChild(arrow);
-
-				arrow.addEventListener('click', (e) => {
-					e.stopPropagation();
-					item.expanded = !item.expanded;
-					renderFileTree();
-				});
-			} else {
-				const arrow = document.createElement('span');
-				arrow.className = 'tree-arrow empty';
-				div.appendChild(arrow);
-			}
-
-			const icon = document.createElement('span');
-			icon.className = 'tree-icon';
-			icon.textContent = item.type === 'folder' ? '📁' : '📄';
-			div.appendChild(icon);
-
-			const label = document.createElement('span');
-			label.className = 'tree-label';
-			label.textContent = item.name;
-			div.appendChild(label);
-
-			div.addEventListener('click', async () => {
-				if (item.type === 'file') {
-					await openTreeFile(path);
-				}
-			});
-
-			container.appendChild(div);
-
-			if (item.type === 'folder' && item.expanded && item.children) {
-				item.children.forEach(childPath => {
-					renderTreeItem(childPath, level + 1, container);
-				});
-			}
-		}
-
-		// ツリーからファイルを開く（選択したもののみ）
-		async function openTreeFile(path) {
-			const item = fileTree.get(path);
-			if (!item || item.type !== 'file') return;
-
-			// 既に開いているかチェック
-			for (const [fileId, fileData] of files.entries()) {
-				if (fileData.path === path) {
-					switchToTab(fileId);
-					return;
-				}
-			}
-
-			try {
-				const file = await item.handle.getFile();
-				const fileId = `file-${fileIdCounter++}`;
-
-				fileHandles.set(fileId, item.handle);
-
-				if (isBinaryFile(file.name)) {
-					files.set(fileId, {
-						name: file.name,
-						content: '',
-						modified: false,
-						binary: true,
-						handle: item.handle,
-						path: path
-					});
-
-					createTab(fileId, file.name);
-					showBinaryWarning(fileId, file.name);
-				} else {
-					const content = await file.text();
-
-					files.set(fileId, {
-						name: file.name,
-						content: content,
-						modified: false,
-						binary: false,
-						handle: item.handle,
-						path: path
-					});
-
-					createTab(fileId, file.name);
-					createEditor(fileId, content, file.name);
-				}
-
-				hideWelcomeScreen();
-			} catch (err) {
-				showNotification('Failed to open file: ' + err.message, 'error');
-			}
-		}
-
-		// タブ作成
-		function createTab(fileId, filename) {
-			const tabBar = document.getElementById('tab-bar');
-			const tab = document.createElement('div');
-			tab.className = 'tab';
-			tab.dataset.fileId = fileId;
-
-			tab.innerHTML = `
-				<span class="tab-icon">📄</span>
-				<span class="tab-label">${filename}</span>
-				<span class="tab-close" onclick="closeTab('${fileId}', event)">×</span>
-			`;
-
-			tab.addEventListener('click', (e) => {
-				if (!e.target.classList.contains('tab-close')) {
-					switchToTab(fileId);
-				}
-			});
-
-			tabBar.appendChild(tab);
-			switchToTab(fileId);
-		}
-
-		// タブ切り替え
-		function switchToTab(fileId) {
-			activeFileId = fileId;
-
-			document.querySelectorAll('.tab').forEach(t => {
-				t.classList.toggle('active', t.dataset.fileId === fileId);
-			});
-
-			document.querySelectorAll('.editor-wrapper').forEach(w => {
-				w.classList.toggle('active', w.id === `editor-${fileId}`);
-			});
-
-			const fileData = files.get(fileId);
-			if (fileData) {
-				document.getElementById('current-file-name').textContent = fileData.name;
-			}
-		}
-
-		// エディタ作成
-		function createEditor(fileId, content, filename) {
-			const container = document.getElementById('editor-container');
-			const wrapper = document.createElement('div');
-			wrapper.className = 'editor-wrapper';
-			wrapper.id = `editor-${fileId}`;
-			container.appendChild(wrapper);
-
-			const editor = monaco.editor.create(wrapper, {
-				value: content,
-				language: getLanguageFromFilename(filename),
-				theme: 'vs-dark',
-				automaticLayout: true,
-				fontSize: 14,
-				minimap: { enabled: true },
-				scrollBeyondLastLine: false
-			});
-
-			editor.onDidChangeModelContent(() => {
-				const fileData = files.get(fileId);
-				if (fileData && !fileData.binary) {
-					fileData.content = editor.getValue();
-					fileData.modified = true;
-					updateTabModifiedState(fileId);
-				}
-			});
-
-			editors.set(fileId, editor);
-		}
-
-		// ファイル名から言語を推定
-		function getLanguageFromFilename(filename) {
-			const ext = filename.split('.').pop().toLowerCase();
-			const languageMap = {
-				'js': 'javascript',
-				'ts': 'typescript',
-				'jsx': 'javascript',
-				'tsx': 'typescript',
-				'json': 'json',
-				'html': 'html',
-				'css': 'css',
-				'scss': 'scss',
-				'py': 'python',
-				'java': 'java',
-				'cpp': 'cpp',
-				'c': 'c',
-				'cs': 'csharp',
-				'php': 'php',
-				'rb': 'ruby',
-				'go': 'go',
-				'rs': 'rust',
-				'sql': 'sql',
-				'md': 'markdown',
-				'xml': 'xml',
-				'yaml': 'yaml',
-				'yml': 'yaml'
-			};
-			return languageMap[ext] || 'plaintext';
-		}
-
-		// タブの修正状態を更新
-		function updateTabModifiedState(fileId) {
-			const tab = document.querySelector(`[data-file-id="${fileId}"]`);
-			const fileData = files.get(fileId);
-			if (tab && fileData) {
-				tab.classList.toggle('modified', fileData.modified);
-			}
-		}
-
-		// タブを閉じる
-		function closeTab(fileId, event) {
-			event?.stopPropagation();
-
-			const fileData = files.get(fileId);
-			if (fileData && fileData.modified) {
-				if (!confirm(`Save changes to ${fileData.name}?`)) {
-					return;
-				}
-			}
-
-			const tab = document.querySelector(`[data-file-id="${fileId}"]`);
-			const wrapper = document.getElementById(`editor-${fileId}`);
-
-			if (tab) tab.remove();
-			if (wrapper) wrapper.remove();
-
-			const editor = editors.get(fileId);
-			if (editor) {
-				editor.dispose();
-				editors.delete(fileId);
-			}
-
-			files.delete(fileId);
-			fileHandles.delete(fileId);
-
-			const remainingTabs = document.querySelectorAll('.tab');
-			if (remainingTabs.length > 0) {
-				const nextFileId = remainingTabs[0].dataset.fileId;
-				switchToTab(nextFileId);
-			} else {
-				activeFileId = null;
-				document.getElementById('current-file-name').textContent = '';
-				showWelcomeScreen();
-			}
-		}
-
-		// ウェルカム画面制御
-		function hideWelcomeScreen() {
-			document.getElementById('welcome-screen').style.display = 'none';
-		}
-
-		function showWelcomeScreen() {
-			document.getElementById('welcome-screen').style.display = 'flex';
-		}
-
-		// 全ファイルで検索
-		async function searchInFiles() {
-			const searchText = document.getElementById('search-text').value;
-			if (!searchText) {
-				showNotification('Please enter search text', 'error');
+		projectNameInput.addEventListener("input", () => {
+			project.name = projectNameInput.value.trim() || "Baram Live Preview";
+			document.title = project.name;
+			scheduleSave();
+		});
+
+		autoUpdateInput.addEventListener("change", () => {
+			project.settings.autoUpdate = autoUpdateInput.checked;
+			updateStatus();
+			scheduleSave();
+			if (autoUpdateInput.checked && changePending) renderPreview();
+		});
+
+		cssHotInput.addEventListener("change", () => {
+			project.settings.cssHot = cssHotInput.checked;
+			scheduleSave();
+			if (cssHotInput.checked && cssPending) updateCssOnly(project.active.css);
+		});
+
+		runBtn.addEventListener("click", () => {
+			renderPreview();
+			scheduleSave();
+		});
+
+		openTabBtn.addEventListener("click", () => {
+			previewWindow = window.open("", "baram-preview");
+			if (!previewWindow) {
+				alert("Popup blocked. Allow popups to open the preview tab.");
 				return;
 			}
+			renderPreview();
+		});
 
-			const matchCase = document.getElementById('search-case').classList.contains('active');
-			const useRegex = document.getElementById('search-regex').classList.contains('active');
-			const resultsContainer = document.getElementById('search-results');
+		downloadBtn.addEventListener("click", () => {
+			downloadZip();
+		});
 
-			resultsContainer.innerHTML = '';
-			searchResultsData = [];
+		backBtn.addEventListener("click", () => {
+			window.location.href = "welcome.html";
+		});
 
-			showProgress('Searching...');
+		previewLayoutButtons.forEach((btn) => {
+			btn.addEventListener("click", () => setPreviewLayout(btn.dataset.layout));
+		});
 
-			try {
-				let regex;
-				if (useRegex) {
-					regex = new RegExp(searchText, matchCase ? 'g' : 'gi');
-				} else {
-					const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-					regex = new RegExp(escaped, matchCase ? 'g' : 'gi');
-				}
+		editorLayoutButtons.forEach((btn) => {
+			btn.addEventListener("click", () => setEditorLayout(btn.dataset.layout));
+		});
 
-				// 開いているファイルを検索
-				for (const [fileId, fileData] of files.entries()) {
-					if (fileData.binary) continue;
-
-					const lines = fileData.content.split('\n');
-					lines.forEach((line, index) => {
-						if (regex.test(line)) {
-							searchResultsData.push({
-								fileId,
-								fileName: fileData.name,
-								lineNumber: index + 1,
-								lineContent: line,
-								searchText
-							});
-						}
-					});
-				}
-
-				// ツリー内のファイルも検索
-				for (const [path, item] of fileTree.entries()) {
-					if (item.type === 'file' && !isBinaryFile(item.name)) {
-						// 既に開いているファイルはスキップ
-						let alreadyOpen = false;
-						for (const fileData of files.values()) {
-							if (fileData.path === path) {
-								alreadyOpen = true;
-								break;
-							}
-						}
-
-						if (!alreadyOpen) {
-							try {
-								const file = await item.handle.getFile();
-								const content = await file.text();
-								const lines = content.split('\n');
-
-								lines.forEach((line, index) => {
-									if (regex.test(line)) {
-										searchResultsData.push({
-											filePath: path,
-											fileName: item.name,
-											lineNumber: index + 1,
-											lineContent: line,
-											searchText
-										});
-									}
-								});
-							} catch (err) {
-								console.error('Error reading file:', err);
-							}
-						}
-					}
-				}
-
-				displaySearchResults();
-				hideProgress();
-
-				showNotification(`Found ${searchResultsData.length} results`);
-			} catch (err) {
-				hideProgress();
-				showNotification('Search failed: ' + err.message, 'error');
-			}
-		}
-
-		// 検索結果を表示
-		function displaySearchResults() {
-			const resultsContainer = document.getElementById('search-results');
-			resultsContainer.innerHTML = '';
-
-			if (searchResultsData.length === 0) {
-				resultsContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #858585;">No results found</div>';
-				return;
-			}
-
-			searchResultsData.forEach((result, index) => {
-				const item = document.createElement('div');
-				item.className = 'search-result-item';
-				item.dataset.index = index;
-
-				const matchCase = document.getElementById('search-case').classList.contains('active');
-				const regex = new RegExp(
-					result.searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-					matchCase ? 'g' : 'gi'
-				);
-
-				const highlightedLine = result.lineContent.replace(regex, match =>
-					`<span class="search-result-match">${match}</span>`
-				);
-
-				item.innerHTML = `
-					<div class="search-result-file">${result.fileName} (Line ${result.lineNumber})</div>
-					<div class="search-result-line">${highlightedLine}</div>
-				`;
-
-				item.addEventListener('click', () => openSearchResult(result));
-				resultsContainer.appendChild(item);
+		if (toggleFilesBtn) {
+			toggleFilesBtn.addEventListener("click", () => {
+				setFilesCollapsed(!workspace.classList.contains("files-collapsed"));
 			});
 		}
 
-		// 検索結果を開く
-		async function openSearchResult(result) {
-			if (result.fileId) {
-				// 既に開いているファイル
-				switchToTab(result.fileId);
-				const editor = editors.get(result.fileId);
-				if (editor) {
-					editor.revealLineInCenter(result.lineNumber);
-					editor.setPosition({ lineNumber: result.lineNumber, column: 1 });
-				}
-			} else if (result.filePath) {
-				// ツリーからファイルを開く
-				await openTreeFile(result.filePath);
-				// 少し待ってからジャンプ
-				setTimeout(() => {
-					const editor = editors.get(activeFileId);
-					if (editor) {
-						editor.revealLineInCenter(result.lineNumber);
-						editor.setPosition({ lineNumber: result.lineNumber, column: 1 });
-					}
-				}, 100);
-			}
-		}
-
-		// ファイル内で置換
-		async function replaceInFiles() {
-			const searchText = document.getElementById('search-text').value;
-			const replaceText = document.getElementById('replace-text').value;
-
-			if (!searchText) {
-				showNotification('Please enter search text', 'error');
-				return;
-			}
-
-			if (!confirm(`Replace all occurrences of "${searchText}" with "${replaceText}"?`)) {
-				return;
-			}
-
-			const matchCase = document.getElementById('search-case').classList.contains('active');
-			const useRegex = document.getElementById('search-regex').classList.contains('active');
-
-			let count = 0;
-
-			try {
-				let regex;
-				if (useRegex) {
-					regex = new RegExp(searchText, matchCase ? 'g' : 'gi');
-				} else {
-					const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-					regex = new RegExp(escaped, matchCase ? 'g' : 'gi');
-				}
-
-				// 開いているファイルで置換
-				for (const [fileId, fileData] of files.entries()) {
-					if (fileData.binary) continue;
-
-					const editor = editors.get(fileId);
-					if (editor) {
-						const content = editor.getValue();
-						const newContent = content.replace(regex, replaceText);
-						if (content !== newContent) {
-							editor.setValue(newContent);
-							count++;
-						}
-					}
-				}
-
-				showNotification(`Replaced in ${count} file(s)`);
-			} catch (err) {
-				showNotification('Replace failed: ' + err.message, 'error');
-			}
-		}
-
-		// 現在のファイルを保存
-		async function saveCurrentFile() {
-			if (!activeFileId) return;
-
-			const fileData = files.get(activeFileId);
-			const handle = fileHandles.get(activeFileId);
-
-			if (!fileData || !handle) {
-				showNotification('Cannot save: file handle not found', 'error');
-				return;
-			}
-
-			if (fileData.binary) {
-				showNotification('Cannot save binary files', 'error');
-				return;
-			}
-
-			try {
-				const editor = editors.get(activeFileId);
-				const content = editor.getValue();
-
-				const writable = await handle.createWritable();
-				await writable.write(content);
-				await writable.close();
-
-				fileData.modified = false;
-				fileData.content = content;
-				updateTabModifiedState(activeFileId);
-
-				showNotification('File saved successfully');
-			} catch (err) {
-				showNotification('Failed to save file: ' + err.message, 'error');
-			}
-		}
-
-		// 全ファイルを保存
-		async function saveAllFiles() {
-			let saved = 0;
-
-			for (const [fileId, fileData] of files.entries()) {
-				if (fileData.modified && !fileData.binary) {
-					const handle = fileHandles.get(fileId);
-					if (handle) {
-						try {
-							const editor = editors.get(fileId);
-							const content = editor.getValue();
-
-							const writable = await handle.createWritable();
-							await writable.write(content);
-							await writable.close();
-
-							fileData.modified = false;
-							fileData.content = content;
-							updateTabModifiedState(fileId);
-							saved++;
-						} catch (err) {
-							console.error('Failed to save:', err);
-						}
-					}
-				}
-			}
-
-			showNotification(`Saved ${saved} file(s)`);
-		}
-
-		// コード整形
-		function formatCode() {
-			if (!activeFileId) return;
-
-			const editor = editors.get(activeFileId);
-			if (editor) {
-				editor.getAction('editor.action.formatDocument').run();
-				showNotification('Code formatted');
-			}
-		}
-
-		// 新規ファイル作成
-		function createNewFile() {
-			const filename = prompt('Enter file name:');
-			if (!filename) return;
-
-			const fileId = `file-${fileIdCounter++}`;
-
-			files.set(fileId, {
-				name: filename,
-				content: '',
-				modified: true,
-				binary: false,
-				handle: null
-			});
-
-			createTab(fileId, filename);
-			createEditor(fileId, '', filename);
-			hideWelcomeScreen();
-		}
-
-		// 新規フォルダ作成
-		function createNewFolder() {
-			showNotification('Folder creation is not yet implemented', 'error');
-		}
-
-		// Gitクローン表示
-		function showGitClone() {
-			switchPanel('git');
-		}
-
-		// リポジトリをクローン
-		async function cloneRepository() {
-			const token = document.getElementById('github-token').value;
-			const repo = document.getElementById('github-repo').value;
-			const branch = document.getElementById('github-branch').value || 'main';
-
-			if (!repo) {
-				showGitStatus('Please enter repository URL', 'error');
-				return;
-			}
-
-			showProgress('Cloning repository...');
-
-			try {
-				const repoMatch = repo.match(/github\.com\/([^\/]+)\/([^\/\.]+)/);
-				if (!repoMatch) {
-					throw new Error('Invalid GitHub repository URL');
-				}
-
-				const owner = repoMatch[1];
-				const repoName = repoMatch[2];
-
-				const headers = {
-					'Accept': 'application/vnd.github.v3+json'
-				};
-
-				if (token) {
-					headers['Authorization'] = `token ${token}`;
-				}
-
-				// リポジトリ情報を取得
-				const apiUrl = `https://api.github.com/repos/${owner}/${repoName}/git/trees/${branch}?recursive=1`;
-				const response = await fetch(apiUrl, { headers });
-
-				if (!response.ok) {
-					throw new Error(`GitHub API error: ${response.status}`);
-				}
-
-				const data = await response.json();
-				const files = data.tree.filter(item => item.type === 'blob');
-
-				// DBに保存
-				const repoData = {
-					name: repoName,
-					owner: owner,
-					url: repo,
-					branch: branch,
-					clonedAt: new Date().toISOString(),
-					files: files.map(f => ({
-						path: f.path,
-						sha: f.sha,
-						url: f.url
-					}))
-				};
-
-				await saveRepository(repoData);
-				await loadRepositories();
-
-				hideProgress();
-				showGitStatus(`Successfully cloned ${owner}/${repoName}`, 'success');
-			} catch (err) {
-				hideProgress();
-				showGitStatus('Clone failed: ' + err.message, 'error');
-			}
-		}
-
-		// リポジトリ一覧を読み込み
-		async function loadRepositories() {
-			const repos = await getRepositories();
-			const container = document.getElementById('repo-list');
-			container.innerHTML = '';
-
-			if (repos.length === 0) {
-				container.innerHTML = '<div style="padding: 20px; text-align: center; color: #858585;">No repositories cloned</div>';
-				return;
-			}
-
-			repos.forEach(repo => {
-				const item = document.createElement('div');
-				item.className = 'repo-item';
-				item.innerHTML = `
-					<div class="repo-info">
-						<div class="repo-name">${repo.owner}/${repo.name}</div>
-						<div class="repo-url">${repo.branch} • ${new Date(repo.clonedAt).toLocaleDateString()}</div>
-					</div>
-					<button class="repo-delete" onclick="deleteRepo(${repo.id}, event)">Delete</button>
-				`;
-
-				item.addEventListener('click', (e) => {
-					if (!e.target.classList.contains('repo-delete')) {
-						loadRepositoryFiles(repo);
-					}
-				});
-
-				container.appendChild(item);
+		if (toggleFilesPanelBtn) {
+			toggleFilesPanelBtn.addEventListener("click", () => {
+				setFilesCollapsed(!workspace.classList.contains("files-collapsed"));
 			});
 		}
 
-		// リポジトリのファイルを読み込み
-		async function loadRepositoryFiles(repo) {
-			showProgress('Loading repository files...');
+		groupToggles.forEach((btn) => {
+			btn.addEventListener("click", () => {
+				const type = btn.dataset.type;
+				const group = document.querySelector(`.file-group[data-type="${type}"]`);
+				if (!group) return;
+				const next = !group.classList.contains("group-collapsed");
+				setGroupCollapsed(type, next);
+			});
+		});
 
-			try {
-				// ファイルツリーをクリア
-				fileTree.clear();
-				document.getElementById('file-tree').innerHTML = '';
+		addFileButtons.forEach((btn) => {
+			btn.addEventListener("click", () => addFile(btn.dataset.type));
+		});
 
-				// ルートフォルダを作成
-				const rootPath = repo.name;
-				fileTree.set(rootPath, {
-					name: repo.name,
-					type: 'folder',
-					children: [],
-					expanded: true,
-					isRepo: true
-				});
+		resizeHandles.forEach((handle) => {
+			handle.addEventListener("pointerdown", (event) => {
+				event.preventDefault();
+				startResize(handle, event);
+			});
+		});
 
-				// ファイルを追加
-				for (const file of repo.files) {
-					const parts = file.path.split('/');
-					let currentPath = rootPath;
-
-					// フォルダ構造を作成
-					for (let i = 0; i < parts.length - 1; i++) {
-						const folderPath = `${currentPath}/${parts[i]}`;
-
-						if (!fileTree.has(folderPath)) {
-							fileTree.set(folderPath, {
-								name: parts[i],
-								type: 'folder',
-								children: [],
-								expanded: false,
-								parent: currentPath
-							});
-
-							fileTree.get(currentPath).children.push(folderPath);
-						}
-
-						currentPath = folderPath;
-					}
-
-					// ファイルを追加
-					const fileName = parts[parts.length - 1];
-					const filePath = `${currentPath}/${fileName}`;
-
-					fileTree.set(filePath, {
-						name: fileName,
-						type: 'file',
-						parent: currentPath,
-						repoFile: file,
-						repo: repo
-					});
-
-					fileTree.get(currentPath).children.push(filePath);
-				}
-
-				renderFileTree();
-				switchPanel('files');
-				hideProgress();
-				showNotification(`Loaded ${repo.owner}/${repo.name}`);
-			} catch (err) {
-				hideProgress();
-				showNotification('Failed to load repository: ' + err.message, 'error');
-			}
-		}
-
-		// リポジトリを削除
-		async function deleteRepo(id, event) {
-			event?.stopPropagation();
-
-			if (!confirm('Delete this repository from the list?')) {
-				return;
-			}
-
-			try {
-				await deleteRepository(id);
-				await loadRepositories();
-				showNotification('Repository deleted');
-			} catch (err) {
-				showNotification('Failed to delete repository: ' + err.message, 'error');
-			}
-		}
-
-		// Git状態メッセージを表示
-		function showGitStatus(message, type = 'success') {
-			const status = document.getElementById('git-status');
-			status.textContent = message;
-			status.className = `git-status show ${type}`;
-
-			setTimeout(() => {
-				status.classList.remove('show');
-			}, 5000);
-		}
-
-		// ファイル数を更新
-		function updateFileCount() {
-			const count = Array.from(fileTree.values()).filter(item => item.type === 'file').length;
-			document.getElementById('file-count').textContent = count;
-		}
-
-		// UI制御
-		function showProgress(text) {
-			document.getElementById('progress-text').textContent = text;
-			document.getElementById('progress-overlay').classList.add('show');
-		}
-
-		function hideProgress() {
-			document.getElementById('progress-overlay').classList.remove('show');
-		}
-
-		function showNotification(message, type = 'success') {
-			const notification = document.createElement('div');
-			notification.className = 'notification';
-			notification.textContent = message;
-			if (type === 'error') {
-				notification.style.background = '#f44336';
-			}
-			document.body.appendChild(notification);
-			setTimeout(() => notification.remove(), 3000);
-		}
-
-		// キーボードショートカット
-		function setupKeyboardShortcuts() {
-			document.addEventListener('keydown', (e) => {
-				if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-					e.preventDefault();
-					saveCurrentFile();
-				} else if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-					e.preventDefault();
-					switchPanel('search');
-				} else if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
-					e.preventDefault();
-					openFiles();
-				}
+		if (previewResize) {
+			previewResize.addEventListener("pointerdown", (event) => {
+				event.preventDefault();
+				startPreviewResize(event);
 			});
 		}
+
+		htmlNameInput.addEventListener("change", () => renameActiveFile("html", htmlNameInput.value));
+		cssNameInput.addEventListener("change", () => renameActiveFile("css", cssNameInput.value));
+		jsNameInput.addEventListener("change", () => renameActiveFile("js", jsNameInput.value));
+
+		const savedEditorLayout = project.settings.editorLayout || "block";
+		const savedPreviewLayout = project.settings.previewLayout || "right";
+		project.settings.editorLayout = savedEditorLayout;
+		setPreviewLayout(savedPreviewLayout);
+
+		const savedFilesCollapsed = project.settings.filesCollapsed || false;
+		setFilesCollapsed(savedFilesCollapsed);
+
+		const savedGroupCollapsed = project.settings.groupCollapsed || { html: false, css: false, js: false };
+		setGroupCollapsed("html", savedGroupCollapsed.html);
+		setGroupCollapsed("css", savedGroupCollapsed.css);
+		setGroupCollapsed("js", savedGroupCollapsed.js);
+
+		window.addEventListener("resize", () => {
+			updateResizeHandles();
+			applyEditorSizes();
+			applyPreviewSize();
+		});
 	</script>
-
 </body>
 
 </html>

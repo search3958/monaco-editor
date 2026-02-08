@@ -12,7 +12,7 @@ import { ensureDir } from './fs';
 
 generateTestSamplesTask();
 
-const SERVER_ROOT = path.normalize(path.join(REPO_ROOT, '../'));
+const SERVER_ROOT = REPO_ROOT;
 createSimpleServer(SERVER_ROOT, 8080);
 createSimpleServer(SERVER_ROOT, 8088);
 
