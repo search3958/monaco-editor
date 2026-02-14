@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WASM OS Dev IDE</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.css">
+    <style>
+        body { margin: 0; background: #1e1e1e; color: #fff; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
+        header { padding: 10px; background: #333; display: flex; gap: 10px; border-bottom: 1px solid #444; }
+        #container { display: flex; flex: 1; overflow: hidden; }
+        #editor { flex: 1; background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; font-size: 14px; padding: 15px; border: none; outline: none; resize: none; }
+        #terminal-container { width: 40%; background: #000; border-left: 1px solid #444; }
+        button { background: #28a745; color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        button:hover { background: #218838; }
+        button:disabled { background: #555; }
+    </style>
+</head>
+<body>
+
+<header>
+    <button id="btn-run">BUILD & RUN KERNEL</button>
+    <span id="status" style="margin-top:8px; font-size:12px; color:#aaa;">Ready</span>
+</header>
+
+<div id="container">
+    <textarea id="editor" spellcheck="false">
+/* Tiny C-Kernel for RISC-V QEMU */
+#define UART0_DR *((volatile unsigned char*)(0x10000000))
+
+void k_print(char *s) {
+    while (*s) UART0_DR = *s++;
+}
+
+void main() {
+    k_print("\n>>> HELLO FROM C-KERNEL <<<\n");
+    k_print("WebAssembly-powered QEMU is running your code.\n");
+    k_print("------------------------------------------\n");
+    
+    int count = 0;
+    while(1) {
+        // 何か処理
+    }
+}
+    </textarea>
+    <div id="terminal-container">
+        <div id="terminal"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.js"></script>
+
+<script type="module">
+    const term = new Terminal({ theme: { background: '#000' }, fontSize: 13, convertEol: true });
+    term.open(document.getElementById('terminal'));
+    
+    const btn = document.getElementById('btn-run');
+    const status = document.getElementById('status');
+
+    // 本来はローカルのファイルを読み込む。今回は動作フローを定義
+    btn.onclick = async () => {
+        btn.disabled = true;
+        term.clear();
+        status.innerText = "Compiling...";
+
+        try {
+            const code = document.getElementById('editor').value;
+            
+            // 1. TCC-WASMを使用してコンパイル (JSでの擬似呼び出し)
+            term.write("Compiling source code with TCC-WASM...\r\n");
+            const kernelBin = await compileInBrowser(code); // 後述
+            
+            term.write("Compilation successful. Size: " + kernelBin.length + " bytes.\r\n");
+            term.write("Starting QEMU-system-riscv32...\r\n");
+
+            // 2. QEMU-WASM起動
+            // ktock/qemu-wasmの成果物をローカルサーバー経由でロード
+            const QEMU_MODULE = await import('./qemu-riscv32.js');
+            const qemu = await QEMU_MODULE.default({
+                arguments: ["-M", "virt", "-bios", "none", "-kernel", "kernel.bin", "-nographic"],
+                preRun: [(mod) => {
+                    mod.FS.writeFile('/kernel.bin', kernelBin);
+                }],
+                print: (text) => term.write(text + "\n"),
+            });
+
+            status.innerText = "Running";
+        } catch (e) {
+            term.write("\x1b[31mError: " + e.message + "\x1b[0m\r\n");
+            console.error(e);
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
+    // ブラウザ内コンパイルのシミュレーション/実装
+    async function compileInBrowser(source) {
+        // ここで実際の libtcc.wasm を叩き、RISC-Vバイナリを生成する
+        // 現実的にはコンパイラ自体もWASMとしてロードする必要がある
+        return new Uint8Array([/* 実際のバイナリデータ */]);
+    }
+</script>
+</body>
+</html>

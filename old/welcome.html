@@ -611,7 +611,7 @@
     }
 
     const defaultContent = {
-      html: `\n<div class="card">\n  <h1>Baram Playground</h1>\n  <p>Edit HTML, CSS, and JS. CSS updates can hot reload without resetting JS.</p>\n  <button class="pulse">Try me</button>\n  <div class="count">Clicks: <span id="count">0</span></div>\n</div>\n`,
+      html: `\n<div class="card">\n  <h1>歓迎</h1>\n  <p>エディタでHTML,CSS,Javascriptを編集します。より大きなスペースが必要ですか？右上のボタンをクリックしてください！</p>\n  <button class="pulse">Try me</button>\n  <div class="count">Clicks: <span id="count">0</span></div>\n</div>\n`,
       css: `\n* {\n  box-sizing: border-box;\n}\n\nbody {\n  margin: 0;\n  font-family: "Space Grotesk", sans-serif;\n  background: radial-gradient(circle at top, #fff, #f3f1ec 60%);\n  color: #1d1b16;\n  min-height: 100vh;\n  display: grid;\n  place-items: center;\n  padding: 32px;\n}\n\n.card {\n  background: #ffffff;\n  border: 1px solid #e0d7c9;\n  border-radius: 20px;\n  padding: 28px 32px;\n  width: min(520px, 92vw);\n  box-shadow: 0 24px 40px -28px rgba(30, 24, 15, 0.5);\n}\n\n.card h1 {\n  margin-top: 0;\n  font-size: 2.1rem;\n}\n\n.card p {\n  color: #5a5145;\n}\n\n.pulse {\n  margin-top: 16px;\n  border: none;\n  border-radius: 999px;\n  padding: 12px 18px;\n  font-weight: 600;\n  cursor: pointer;\n  background: #0b7a75;\n  color: #fff;\n  box-shadow: 0 16px 30px -20px rgba(11, 122, 117, 0.8);\n  transition: transform 0.2s ease;\n}\n\n.pulse:hover {\n  transform: translateY(-2px);\n}\n\n.count {\n  margin-top: 18px;\n  font-weight: 600;\n}\n`,
       js: `\nconst button = document.querySelector('.pulse');\nconst counter = document.querySelector('#count');\nlet value = 0;\n\nbutton?.addEventListener('click', () => {\n  value += 1;\n  if (counter) counter.textContent = String(value);\n});\n`,
     };
